@@ -9,18 +9,11 @@
         android:layout_height="match_parent">
 
         <TextView
-            android:id="@+id/url"
             android:layout_width="match_parent"
-            android:layout_height="20dp"
-            android:text="ISSSOUUUUUUUUUUUUU"/>
-
-        <WebView
-            android:id="@+id/login"
-            android:layout_marginTop="20dp"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-        </WebView>
+            android:layout_height="match_parent"
+            android:gravity="center_horizontal|center_vertical"
+            android:textSize="18sp"
+            android:text="Autorisation en cours"/>
 
     </LinearLayout>
 

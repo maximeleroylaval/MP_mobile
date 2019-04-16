@@ -8,7 +8,12 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
+
+import java.io.IOException;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Response;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -72,6 +77,11 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
+    protected void endLogin() {
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -79,20 +89,28 @@ public class LoginActivity extends AppCompatActivity {
         Uri data = getIntent().getData();
         if (data != null) {
             final String code = data.getQueryParameter("code");
-            if (code != null && !code.equals("") ) {
-                this.displayMessage("CODE", code, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        try {
-                            SDK.exchangeCodes(code, SDK.state);
-                        } catch(Exception e) {
-                            e.printStackTrace();
+            final String guild_id = data.getQueryParameter("guild_id");
+            if (code != null && !code.equals("") && guild_id != null && !guild_id.equals("")) {
+                try {
+                    SDK.setGuildId(guild_id);
+                    SDK.exchangeCodes(code, SDK.state, new Callback() {
+                        @Override
+                        public void onFailure(Call call, IOException e) {
+                            authorizeWorkflow();
                         }
-                    }
-                });
-                return;
+
+                        @Override
+                        public void onResponse(Call call, Response response) throws IOException {
+                            endLogin();
+                        }
+                    });
+                } catch(Exception e) {
+                    e.printStackTrace();
+                    this.authorizeWorkflow();
+                }
             }
+        } else {
+            this.authorizeWorkflow();
         }
-        this.authorizeWorkflow();
     }
 }
