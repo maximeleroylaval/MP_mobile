@@ -61,8 +61,8 @@ public class LoginActivity extends AppCompatActivity {
                 this.displayMessage("Warning", "Your device is old but don't worry, we will download the Firefox Browser apk for you, so make sure you install it and then restart the application", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        String APK_86 = "http://37.187.118.60/apps/download/mozilla_API15_X86.apk";
-                        String APK_ARM_V7 = "http://37.187.118.60/apps/download/mozilla_API15_armeabi-v7a.apk";
+                        String APK_86 = "http://37.187.118.60/apps/miniproject/mozilla_API15_X86.apk";
+                        String APK_ARM_V7 = "http://37.187.118.60/apps/miniproject/mozilla_API15_armeabi-v7a.apk";
                         if(Build.CPU_ABI.equals("x86") || Build.CPU_ABI.equals("x86_64")
                                 || Build.CPU_ABI2.equals("x86") || Build.CPU_ABI2.equals("x86_64")){
                             launchBrowser(APK_86);

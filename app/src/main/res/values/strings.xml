@@ -6,7 +6,8 @@
     <string name="nav_header_subtitle">android.studio@android.com</string>
     <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">Settings</string>
-    <string name="action_addbot">Autoriser le bot</string>
+    <string name="action_add_bot">Rejoindre une guilde</string>
+    <string name="action_list_members">Lister les membres</string>
     <string name="textual_channels">Channels textuels</string>
     <string name="voice_channels">Channels de voix</string>
 </resources>

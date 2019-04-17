@@ -39,7 +39,7 @@ public class SDK {
 
     private static String clientSecret = "9H30Ge-eVQNkXwskPVy8HrAQFPsQ9Wk6";
 
-    private static String botToken = "NDA4Mzc4NDY2MjIwNjM4MjE4.XLS-pw.dbU0HB20CFITP-MSE9VRarbNDtg";
+    public static String botToken = "NDA4Mzc4NDY2MjIwNjM4MjE4.XLS-pw.dbU0HB20CFITP-MSE9VRarbNDtg";
 
     public static String state = "0986545678";
 
@@ -51,7 +51,7 @@ public class SDK {
 
     private static String refreshToken;
 
-    private static OkHttpClient client;
+    public static OkHttpClient client;
 
     private static Context mainContext = null;
 
@@ -148,6 +148,14 @@ public class SDK {
         });
     }
 
+    public static void getGatewayBot(Callback call) {
+        Request.Builder requestBuilder = new Request.Builder()
+                .url(SDK.BuildURL("gateway/bot"));
+        SDK.addAuthorization(requestBuilder);
+        Request request = requestBuilder.build();
+        client.newCall(request).enqueue(call);
+    }
+
     static void getChannels(Callback call) {
         Request.Builder requestBuilder = new Request.Builder()
                 .url(SDK.BuildURL("guilds/" + SDK.guild_id + "/channels"));
@@ -159,6 +167,14 @@ public class SDK {
     static void getMessages(Channel channel, Callback call) {
         Request.Builder requestBuilder = new Request.Builder()
                 .url(SDK.BuildURL("channels/" + channel.id + "/messages"));
+        SDK.addAuthorization(requestBuilder);
+        Request request = requestBuilder.build();
+        client.newCall(request).enqueue(call);
+    }
+
+    static void getGuildMembers(Callback call) {
+        Request.Builder requestBuilder = new Request.Builder()
+                .url(SDK.BuildURL("guilds/" + SDK.guild_id + "/members"));
         SDK.addAuthorization(requestBuilder);
         Request request = requestBuilder.build();
         client.newCall(request).enqueue(call);

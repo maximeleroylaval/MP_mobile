@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.util.List;
 
 import ca.ulaval.ima.mp.models.Channel;
+import ca.ulaval.ima.mp.models.Gateway;
+import ca.ulaval.ima.mp.models.Guild;
 import ca.ulaval.ima.mp.models.JSONHelper;
 import ca.ulaval.ima.mp.models.Message;
 import okhttp3.Call;
@@ -62,7 +64,14 @@ public class MainActivity extends AppCompatActivity
                                 }
                             });
                         } else if (innerChannel.type == Channel.TYPES.GUILD_VOICE) {
-                            subMenu.add(innerChannel.name).setIcon(R.drawable.ic_speaker_channel);
+                            MenuItem item = subMenu.add(innerChannel.name).setIcon(R.drawable.ic_speaker_channel);
+                            item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                                @Override
+                                public boolean onMenuItemClick(MenuItem item) {
+                                    Gateway.joinVoiceChannel(innerChannel);
+                                    return false;
+                                }
+                            });
                         }
                     }
                 }
@@ -74,6 +83,7 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         SDK.Initialize(this);
+        Gateway.Initialize();
 
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -135,9 +145,27 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_addbot) {
+        if (id == R.id.action_add_bot) {
             Intent intent = new Intent(this, LoginActivity.class);
             startActivity(intent);
+            return true;
+        }
+
+        if (id == R.id.action_list_members) {
+            SDK.getGuildMembers(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+
+                }
+
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    List<Guild.Member> members = JSONHelper.asArray(Guild.Member.class, response);
+                    for (Guild.Member member : members) {
+                        Log.d("MEMBER", member.nick != null ? member.nick : "null");
+                    }
+                }
+            });
             return true;
         }
 

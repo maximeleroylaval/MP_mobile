@@ -2,6 +2,9 @@ package ca.ulaval.ima.mp.models;
 
 import android.util.Log;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -21,23 +24,18 @@ import okhttp3.Response;
 
 public class JSONHelper {
 
-    public static <T> List<T> asArray(Class<T> myClass, Response response) throws IOException {
-        JSONArray array = null;
-        try {
-            if (response != null && response.body() != null)
-            array = new JSONArray(response.body().string());
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return asArray(myClass, array);
-    }
-
-    public static <T> List<T> asArray(Class<T> myClass, JSONArray array) {
+    public static <T,W> List<T> asArrayWithConstructor(Class<T> myClass, Class<W> myParameter, JSONArray array) {
         List<T> list = new ArrayList<>();
         try {
             if (array != null) {
                 for (int i = 0; i < array.length(); i++) {
-                    T obj = myClass.getConstructor(JSONObject.class).newInstance(array.getJSONObject(i));
+                    W parameter;
+                    if (myParameter.equals(JSONObject.class)) {
+                        parameter = (W)array.getJSONObject(i);
+                    } else {
+                        parameter = myParameter.getConstructor(myParameter).newInstance(array.get(i));
+                    }
+                    T obj = myClass.getConstructor(myParameter).newInstance(parameter);
                     list.add(obj);
                 }
                 return list;
@@ -55,6 +53,32 @@ public class JSONHelper {
             e.printStackTrace();
         }
         return list;
+    }
+
+    public static <T,W> List<T> asArrayWithConstructor(Class<T> myClass, Class<W> myParameter, Response response) throws IOException {
+        JSONArray array = null;
+        try {
+            if (response != null && response.body() != null)
+                array = new JSONArray(response.body().string());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return asArrayWithConstructor(myClass, myParameter, array);
+    }
+
+    public static <T> List<T> asArray(Class<T> myClass, Response response) throws IOException {
+        JSONArray array = null;
+        try {
+            if (response != null && response.body() != null)
+                array = new JSONArray(response.body().string());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return asArray(myClass, array);
+    }
+
+    public static <T> List<T> asArray(Class<T> myClass, JSONArray array) {
+        return asArrayWithConstructor(myClass, JSONObject.class, array);
     }
 
     public static boolean isSet(JSONObject obj, String field) {
@@ -130,6 +154,46 @@ public class JSONHelper {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+        }
+        return null;
+    }
+
+    public static JSONObject getJSONObject(String jsonString) {
+        try {
+            return new JSONObject(jsonString);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static JSONObject getJSONObject(Response response) throws IOException {
+        if (response != null && response.body() != null) {
+            return getJSONObject(response.body().string());
+        }
+        return null;
+    }
+
+    public static <T> String asJSONString(T obj) {
+        String jsonInString = null;
+        if (obj != null) {
+            ObjectMapper mapper = new ObjectMapper();
+            try {
+                jsonInString = mapper.writeValueAsString(obj);
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
+        }
+        return jsonInString;
+    }
+
+    public static <T> JSONObject asJSONObject(T obj) {
+        try {
+            String jsonObj = asJSONString(obj);
+            if (jsonObj != null)
+                return new JSONObject(jsonObj);
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
         return null;
     }
