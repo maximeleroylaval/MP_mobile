@@ -5,6 +5,8 @@ import org.json.JSONObject;
 import java.sql.Timestamp;
 import java.util.List;
 
+import ca.ulaval.ima.mp.JSONHelper;
+
 public class Message {
     public String id;
     public String channelId;

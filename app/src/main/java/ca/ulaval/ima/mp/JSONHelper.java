@@ -1,4 +1,4 @@
-package ca.ulaval.ima.mp.models;
+package ca.ulaval.ima.mp;
 
 import android.util.Log;
 
@@ -130,6 +130,24 @@ public class JSONHelper {
             } catch (ParseException e) {
                 e.printStackTrace();
             } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
+    public static Byte[] getByteArray(JSONObject obj, String field) {
+        if (isSet(obj, field)) {
+            try {
+                JSONArray array = obj.getJSONArray(field);
+                if (array != null) {
+                    Byte[] bytes = new Byte[array.length()];
+                    for (int i = 0; i < array.length(); i++) {
+                        bytes[i] = (byte)array.getInt(i);
+                    }
+                    return bytes;
+                }
+            } catch (JSONException e) {
                 e.printStackTrace();
             }
         }

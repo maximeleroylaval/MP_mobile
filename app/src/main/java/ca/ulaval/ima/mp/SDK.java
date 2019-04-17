@@ -1,6 +1,9 @@
 package ca.ulaval.ima.mp;
 
 import android.content.Context;
+import android.content.DialogInterface;
+import android.os.Looper;
+import android.support.v7.app.AlertDialog;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -15,6 +18,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
 
 import ca.ulaval.ima.mp.models.Channel;
 import okhttp3.Call;
@@ -53,7 +58,7 @@ public class SDK {
 
     public static OkHttpClient client;
 
-    private static Context mainContext = null;
+    public static Context mainContext = null;
 
     static void setGuildId(String guild_id) {
         SDK.guild_id = guild_id;
@@ -80,6 +85,14 @@ public class SDK {
         client = new OkHttpClient.Builder()
                 .addInterceptor(logInterceptor)
                 .build();
+    }
+
+    public static void displayMessage(String title, String message, DialogInterface.OnClickListener listener) {
+        new AlertDialog.Builder(mainContext)
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton("OK", listener)
+                .show();
     }
 
     static String getLoginURL()  {

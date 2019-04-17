@@ -2,10 +2,7 @@ package ca.ulaval.ima.mp;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.util.Log;
-import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -15,17 +12,12 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.IOException;
 import java.util.List;
 
 import ca.ulaval.ima.mp.models.Channel;
-import ca.ulaval.ima.mp.models.Gateway;
+import ca.ulaval.ima.mp.models.gateway.Gateway;
 import ca.ulaval.ima.mp.models.Guild;
-import ca.ulaval.ima.mp.models.JSONHelper;
 import ca.ulaval.ima.mp.models.Message;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -68,7 +60,7 @@ public class MainActivity extends AppCompatActivity
                             item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
                                 @Override
                                 public boolean onMenuItemClick(MenuItem item) {
-                                    Gateway.joinVoiceChannel(innerChannel);
+                                    Gateway.server.joinVoiceChannel(innerChannel);
                                     return false;
                                 }
                             });

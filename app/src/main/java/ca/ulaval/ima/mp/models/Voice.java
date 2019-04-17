@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.json.JSONObject;
 
+import ca.ulaval.ima.mp.JSONHelper;
+
 public class Voice {
     public static class State {
 

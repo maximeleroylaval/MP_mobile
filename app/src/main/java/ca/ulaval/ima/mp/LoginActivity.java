@@ -28,14 +28,6 @@ public class LoginActivity extends AppCompatActivity {
         return found;
     }
 
-    protected void displayMessage(String title, String message, DialogInterface.OnClickListener listener) {
-        new AlertDialog.Builder(this)
-                .setTitle(title)
-                .setMessage(message)
-                .setPositiveButton("OK", listener)
-                .show();
-    }
-
     protected void launchBrowser(String url) {
         Intent i = new Intent(Intent.ACTION_VIEW);
         i.setData(Uri.parse(url));
@@ -51,14 +43,14 @@ public class LoginActivity extends AppCompatActivity {
             this.launchLogin();
         } else {
             if (isPackageInstalled("org.mozilla.firefox", this.getPackageManager())) {
-                this.displayMessage("Warning", "Make sure to select Firefox Browser on the next pop up", new DialogInterface.OnClickListener() {
+                SDK.displayMessage("Warning", "Make sure to select Firefox Browser on the next pop up", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         launchLogin();
                     }
                 });
             } else {
-                this.displayMessage("Warning", "Your device is old but don't worry, we will download the Firefox Browser apk for you, so make sure you install it and then restart the application", new DialogInterface.OnClickListener() {
+                SDK.displayMessage("Warning", "Your device is old but don't worry, we will download the Firefox Browser apk for you, so make sure you install it and then restart the application", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         String APK_86 = "http://37.187.118.60/apps/miniproject/mozilla_API15_X86.apk";

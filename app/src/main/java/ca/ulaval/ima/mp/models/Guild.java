@@ -7,6 +7,8 @@ import org.json.JSONObject;
 import java.sql.Timestamp;
 import java.util.List;
 
+import ca.ulaval.ima.mp.JSONHelper;
+
 public class Guild {
     public static class Member {
         public User user;

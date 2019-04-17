@@ -2,6 +2,8 @@ package ca.ulaval.ima.mp.models;
 
 import org.json.JSONObject;
 
+import ca.ulaval.ima.mp.JSONHelper;
+
 public class User {
     public String id;
     public String username;

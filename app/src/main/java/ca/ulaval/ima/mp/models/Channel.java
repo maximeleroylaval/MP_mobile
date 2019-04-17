@@ -8,6 +8,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import ca.ulaval.ima.mp.JSONHelper;
+
 public class Channel {
     public String id;
 
