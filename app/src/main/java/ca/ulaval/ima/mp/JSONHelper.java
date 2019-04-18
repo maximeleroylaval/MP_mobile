@@ -215,4 +215,15 @@ public class JSONHelper {
         }
         return null;
     }
+
+    public static byte[] toPrimitiveByteArray(Byte[] oBytes)
+    {
+        byte[] bytes = new byte[oBytes.length];
+
+        for(int i = 0; i < oBytes.length; i++) {
+            bytes[i] = oBytes[i];
+        }
+
+        return bytes;
+    }
 }

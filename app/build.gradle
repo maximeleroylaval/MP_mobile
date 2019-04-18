@@ -33,6 +33,14 @@ dependencies {
     // JSON Parser
     implementation "com.fasterxml.jackson.core:jackson-databind:2.9.8"
 
+    // Utility
+    implementation 'net.sf.trove4j:trove4j:3.0.3'
+
+    // Opus library support
+    implementation 'top.oply.opuslib:opuslib:1.0.2'
+
+    implementation 'commons-io:commons-io:2.6'
+
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'

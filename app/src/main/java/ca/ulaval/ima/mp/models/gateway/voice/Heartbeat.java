@@ -10,6 +10,10 @@ import ca.ulaval.ima.mp.models.gateway.Payload;
 
 public class Heartbeat extends Payload {
     public static class Interval {
+        public interface Callback {
+            void onLoop(Heartbeat heartbeat, int interval);
+        }
+
         public Payload count = null;
         public Integer v;
         public Integer heartbeatInterval;
@@ -28,18 +32,12 @@ public class Heartbeat extends Payload {
             count = payload;
         }
 
-        public void start(final VoiceListener listener) {
+        public void start(final Callback callback) {
             this.thread = new Thread() {
                 @Override
                 public void run() {
-                    try {
-                        while(started) {
-                            long milliseconds = Double.valueOf(heartbeatInterval * 0.75).longValue();
-                            TimeUnit.MILLISECONDS.sleep(milliseconds);
-                            listener.input(new Heartbeat(count).toJSONString());
-                        }
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+                    while(started) {
+                        callback.onLoop(new Heartbeat(count), heartbeatInterval);
                     }
                 }
             };

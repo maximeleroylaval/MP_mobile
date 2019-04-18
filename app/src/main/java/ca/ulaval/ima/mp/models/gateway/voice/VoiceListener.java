@@ -1,14 +1,13 @@
 package ca.ulaval.ima.mp.models.gateway.voice;
 
-import android.content.DialogInterface;
 import android.util.Log;
 
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import ca.ulaval.ima.mp.JSONHelper;
-import ca.ulaval.ima.mp.SDK;
 import ca.ulaval.ima.mp.models.Voice;
 import ca.ulaval.ima.mp.models.gateway.Gateway;
 import ca.ulaval.ima.mp.models.gateway.Payload;
@@ -29,7 +28,21 @@ public class VoiceListener extends WebSocketListener {
         Payload payload = new Payload(JSONHelper.getJSONObject(text));
         if (payload.op.equals(Gateway.VOICE.OP.HELLO)) {
             heartbeatInterval = new Heartbeat.Interval(payload);
-            heartbeatInterval.start(this);
+            heartbeatInterval.start(new Heartbeat.Interval.Callback() {
+                @Override
+                public void onLoop(Heartbeat heartbeat, int interval) {
+                    long milliseconds = Double.valueOf(interval * 0.75).longValue();
+                    try {
+                        TimeUnit.MILLISECONDS.sleep(milliseconds);
+                        if (udpListener != null && udpListener.isReady()) {
+                            udpListener.keepAlive();
+                        }
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    input(heartbeat.toJSONString());
+                }
+            });
             Identify identify = new Identify(this.voiceServer.guildId, this.voiceState.userId,
                     this.voiceState.sessionId, this.voiceServer.token);
             Payload identifyPayload = new Payload(Gateway.VOICE.OP.IDENTIFY, identify, null, null);
@@ -65,6 +78,7 @@ public class VoiceListener extends WebSocketListener {
             if (udpListener != null) {
                 udpListener.setEncryption(sessionDescription);
             }
+            speak(false);
         }
         if (heartbeatInterval != null && !payload.op.equals(Gateway.VOICE.OP.HEARTBEAT_ACK)) {
             heartbeatInterval.update(payload);
@@ -77,17 +91,17 @@ public class VoiceListener extends WebSocketListener {
         }
     }
 
-    public void speak() {
-        Speaking speaking = new Speaking(true, 0, udpListener.ready.ssrc);
+    public static void speak(Boolean isSpeaking) {
+        Speaking speaking = new Speaking(isSpeaking, 0, udpListener.ready.ssrc);
         Payload payloadSpeaking = new Payload(Gateway.VOICE.OP.SPEAKING, speaking, null, null);
         input(payloadSpeaking.toJSONString());
     }
 
-    public void output(final String txt) {
+    public static void output(final String txt) {
         Log.d("[WS] VOICE RECEIVED", txt);
     }
 
-    public void input(final String txt) {
+    public static void input(final String txt) {
         if (txt != null && socket != null) {
             Log.d("[WS] VOICE SENDING", txt);
             socket.send(txt);

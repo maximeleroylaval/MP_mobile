@@ -87,12 +87,16 @@ public class SDK {
                 .build();
     }
 
-    public static void displayMessage(String title, String message, DialogInterface.OnClickListener listener) {
-        new AlertDialog.Builder(mainContext)
+    public static void displayMessage(Context context, String title, String message, DialogInterface.OnClickListener listener) {
+        new AlertDialog.Builder(context)
                 .setTitle(title)
                 .setMessage(message)
                 .setPositiveButton("OK", listener)
                 .show();
+    }
+
+    public static void displayMessage(String title, String message, DialogInterface.OnClickListener listener) {
+        SDK.displayMessage(mainContext, title, message, listener);
     }
 
     static String getLoginURL()  {
@@ -188,6 +192,14 @@ public class SDK {
     static void getGuildMembers(Callback call) {
         Request.Builder requestBuilder = new Request.Builder()
                 .url(SDK.BuildURL("guilds/" + SDK.guild_id + "/members"));
+        SDK.addAuthorization(requestBuilder);
+        Request request = requestBuilder.build();
+        client.newCall(request).enqueue(call);
+    }
+
+    public static void getUserById(Integer id, Callback call) {
+        Request.Builder requestBuilder = new Request.Builder()
+                .url(SDK.BuildURL("/users/" + id));
         SDK.addAuthorization(requestBuilder);
         Request request = requestBuilder.build();
         client.newCall(request).enqueue(call);
