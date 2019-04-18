@@ -10,4 +10,7 @@
     <string name="action_list_members">Lister les membres</string>
     <string name="textual_channels">Channels textuels</string>
     <string name="voice_channels">Channels de voix</string>
+    <string name="actions_send_message">Envoyer un message</string>
+    <string name="send">Envoyer</string>
+    <string name="action_disconnect">Se déconnecter</string>
 </resources>

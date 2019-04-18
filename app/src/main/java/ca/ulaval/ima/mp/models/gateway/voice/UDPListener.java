@@ -10,10 +10,12 @@ import org.apache.commons.io.IOUtils;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -21,6 +23,7 @@ import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -37,6 +40,7 @@ import gnu.trove.map.hash.TIntLongHashMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import okhttp3.Call;
 import okhttp3.Response;
+import top.oply.opuslib.OpusService;
 import top.oply.opuslib.OpusTool;
 
 public class UDPListener {
@@ -53,6 +57,7 @@ public class UDPListener {
     public AudioSendHandler sendHandler = new AudioSendHandler() {
         File sdcard = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
         final File file = new File(sdcard,"sao_a_tender_feeling.wav");
+        public boolean convertFile = false;
 
         File playingFile = file;
         int currentOffset = 0;
@@ -62,26 +67,41 @@ public class UDPListener {
             OpusTool oTool = new OpusTool();
             File outFile = new File(sdcard, "test.opus");
             oTool.encode(file.getAbsolutePath(), outFile.getAbsolutePath(), null);
+            OpusService.play(SDK.mainContext, outFile.getAbsolutePath());
             return outFile;
+        }
+
+        int pos = 0;
+
+        public void readChunk(byte[] chunkData) {
+            File file = new File(sdcard, "chunk" + pos + ".opus");
+
+//            INPUT_FORMAT.write(chunkData, 0, chunkData.length);
+//            INPUT_FORMAT.play();
+            pos++;
         }
 
         @Override
         public byte[] provide20MsAudio() {
             if (file != null) {
+                if (convertFile) {
+                    convertFileToOpus(file);
+                    convertFile = false;
+                }
                 log(file.getAbsolutePath());
                 try {
                     if (file == playingFile) {
-                        //convertFileToOpus(file);
                         File outFile = new File(sdcard, "test.opus");
                         byte[] encryptedData = FileUtils.readFileToByteArray(outFile);
                         float millisecondsOfAudio = 20.0f;
                         float frequency = 48000.0f;
                         float channels = 2.0f;
                         int sizeToRead = (int) (millisecondsOfAudio / ((1000.0f / frequency) * channels));
-                        encryptedData = new String(encryptedData, currentOffset, sizeToRead).getBytes();
+                        byte[] chunkData = new String(encryptedData, currentOffset, sizeToRead).getBytes();
                         currentOffset += sizeToRead;
-                        log("PACKET OUT : " + encryptedData.length);
-                        return encryptedData;
+                        readChunk(chunkData);
+                        log("PACKET OUT : " + chunkData.length);
+                        return chunkData;
                     }
                 } catch (IOException e) {
                     log("Could not read file" + file.getAbsolutePath());
@@ -294,7 +314,9 @@ public class UDPListener {
         AudioPacket packet = new AudioPacket(encryptionBuffer, seq, timestamp, ready.ssrc, rawAudio);
         byte[] secretKey = JSONHelper.toPrimitiveByteArray(sessionDescription.secretKey);
         log("secretKey len:" + secretKey);
-        return buffer = packet.asEncryptedPacket(buffer, secretKey, nonceBuffer, 0);
+        buffer = packet.asEncryptedPacket(buffer, secretKey, nonceBuffer, 0);
+        log("Buffer : " + buffer.toString());
+        return buffer;
     }
 
     private void ensureEncryptionBuffer(byte[] data)
@@ -401,7 +423,12 @@ public class UDPListener {
     }
 
     public void send(DatagramPacket packet) throws IOException {
-        log("Sending : " + packet.getData());
+        String str = new String(
+                packet.getData(),
+                packet.getOffset(),
+                packet.getLength()
+        );
+        log("Sending (" + packet.getData().length + ") : " + str);
         log("To : " + packet.getSocketAddress() + ":" + packet.getPort());
         socket.send(packet);
     }
@@ -410,7 +437,12 @@ public class UDPListener {
         byte[] outData = new byte[size];
         DatagramPacket receivedPacket = new DatagramPacket(outData, size);
         socket.receive(receivedPacket);
-        log("Received (" + receivedPacket.getData().length + ") : " + receivedPacket.getData());
+        String str = new String(
+                receivedPacket.getData(),
+                receivedPacket.getOffset(),
+                receivedPacket.getLength()
+        );
+        log("Received (" + receivedPacket.getData().length + ") : " + str);
         return receivedPacket.getData();
     }
 }

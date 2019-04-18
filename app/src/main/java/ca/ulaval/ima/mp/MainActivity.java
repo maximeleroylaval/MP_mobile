@@ -1,5 +1,6 @@
 package ca.ulaval.ima.mp;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -11,6 +12,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.EditText;
 
 import java.io.IOException;
 import java.util.List;
@@ -19,12 +22,15 @@ import ca.ulaval.ima.mp.models.Channel;
 import ca.ulaval.ima.mp.models.gateway.Gateway;
 import ca.ulaval.ima.mp.models.Guild;
 import ca.ulaval.ima.mp.models.Message;
+import ca.ulaval.ima.mp.models.gateway.voice.VoiceListener;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+
+    public Channel activeChannel = null;
 
     protected void displayChannels(Response response, NavigationView navigationView) throws IOException {
         List<Channel> channels = Channel.sort(JSONHelper.asArray(Channel.class, response));
@@ -39,6 +45,7 @@ public class MainActivity extends AppCompatActivity
                             item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
                                 @Override
                                 public boolean onMenuItemClick(MenuItem item) {
+                                    activeChannel = innerChannel;
                                     SDK.getMessages(innerChannel, new Callback() {
                                         @Override
                                         public void onFailure(Call call, IOException e) {
@@ -60,6 +67,7 @@ public class MainActivity extends AppCompatActivity
                             item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
                                 @Override
                                 public boolean onMenuItemClick(MenuItem item) {
+                                    activeChannel = innerChannel;
                                     Gateway.server.joinVoiceChannel(innerChannel);
                                     return false;
                                 }
@@ -112,6 +120,26 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
+    public void sendMessage(View view) {
+        if (activeChannel == null || activeChannel.type != Channel.TYPES.GUILD_TEXT) {
+            SDK.displayMessage("Channel", "Please select a text channel before sending messages", null);
+            return;
+        }
+        final EditText messageView = findViewById(R.id.edit_message);
+        String message = messageView.getText().toString();
+        SDK.postMessage(message, activeChannel, new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                SDK.displayMessage("MESSAGE", "Failed to send your message", null);
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                messageView.setText("");
+            }
+        });
+    }
+
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
@@ -141,6 +169,11 @@ public class MainActivity extends AppCompatActivity
             Intent intent = new Intent(this, LoginActivity.class);
             startActivity(intent);
             return true;
+        }
+
+        if (id == R.id.action_disconnect) {
+            VoiceListener.speak(false);
+            VoiceListener.disconnect();
         }
 
         if (id == R.id.action_list_members) {

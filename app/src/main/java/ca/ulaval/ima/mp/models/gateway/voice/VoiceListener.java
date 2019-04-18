@@ -91,6 +91,11 @@ public class VoiceListener extends WebSocketListener {
         }
     }
 
+    public static void disconnect() {
+        Payload payloadSpeaking = new Payload(Gateway.VOICE.OP.CLIENT_DISCONNECT, null, null, null);
+        input(payloadSpeaking.toJSONString());
+    }
+
     public static void speak(Boolean isSpeaking) {
         Speaking speaking = new Speaking(isSpeaking, 0, udpListener.ready.ssrc);
         Payload payloadSpeaking = new Payload(Gateway.VOICE.OP.SPEAKING, speaking, null, null);

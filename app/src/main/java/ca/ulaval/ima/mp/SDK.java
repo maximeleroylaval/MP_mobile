@@ -189,6 +189,21 @@ public class SDK {
         client.newCall(request).enqueue(call);
     }
 
+    static void postMessage(String message, Channel channel, Callback call) {
+        RequestBody body = new FormBody.Builder()
+                .add("content", message)
+                .build();
+
+        Request.Builder requestBuilder = new Request.Builder()
+                .url(SDK.BuildURL("channels/" + channel.id + "/messages"))
+                .post(body)
+                .addHeader("Content-Type", "application/x-www-form-urlencoded");
+
+        SDK.addAuthorization(requestBuilder);
+        Request request = requestBuilder.build();
+        client.newCall(request).enqueue(call);
+    }
+
     static void getGuildMembers(Callback call) {
         Request.Builder requestBuilder = new Request.Builder()
                 .url(SDK.BuildURL("guilds/" + SDK.guild_id + "/members"));
