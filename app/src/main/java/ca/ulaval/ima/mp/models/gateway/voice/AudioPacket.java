@@ -10,6 +10,7 @@ import io.netty.buffer.ByteBuf;
 final class AudioPacket {
 
     static class OPUS {
+        static final int CHANNELS = 2;
         static final int FRAME_TIME = 20; // ms
         static final int SAMPLE_RATE = 48_000; // Hz
         static final int FRAME_SIZE = SAMPLE_RATE / (1000 / FRAME_TIME); // per second
