@@ -9,7 +9,7 @@ import ca.ulaval.ima.mp.JSONHelper;
 public class SessionDescription {
     public String mode;
     @JsonProperty("secret_key")
-    public Byte[] secretKey;
+    public byte[] secretKey;
     @JsonProperty("video_codec")
     public String videoCodec;
     @JsonProperty("media_session_id")

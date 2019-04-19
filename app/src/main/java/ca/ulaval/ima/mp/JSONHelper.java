@@ -1,8 +1,10 @@
 package ca.ulaval.ima.mp;
 
+import android.util.Base64;
 import android.util.Log;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.json.JSONArray;
@@ -10,12 +12,14 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -136,22 +140,23 @@ public class JSONHelper {
         return null;
     }
 
-    public static Byte[] getByteArray(JSONObject obj, String field) {
+    public static byte[] getByteArray(JSONObject obj, String field) {
         if (isSet(obj, field)) {
             try {
                 JSONArray array = obj.getJSONArray(field);
                 if (array != null) {
-                    Byte[] bytes = new Byte[array.length()];
+                    byte[] bytes = new byte[array.length()];
                     for (int i = 0; i < array.length(); i++) {
                         bytes[i] = (byte)array.getInt(i);
                     }
+                    Log.d("BYTES", Arrays.toString(bytes));
                     return bytes;
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
-        return null;
+        return new byte[0];
     }
 
     public static JSONArray getJSONArray(JSONObject obj, String field) {

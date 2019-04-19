@@ -1,12 +1,12 @@
 package ca.ulaval.ima.mp.lib;
 
-// Fast crypto library taken from https://github.com/InstantWebP2P/tweetnacl-java
-
+/*
+ * Code taken from https://github.com/InstantWebP2P/tweetnacl-java under MIT license
+ */
 // Copyright (c) 2014 Tom Zhou<iwebpp@gmail.com>
 
 import java.io.UnsupportedEncodingException;
 import java.security.SecureRandom;
-import java.lang.System;
 import java.util.concurrent.atomic.AtomicLong;
 
 
@@ -1175,7 +1175,7 @@ public final class TweetNaclFast {
         o[61] = (byte) (x15 >>>  8 & 0xff);
         o[62] = (byte) (x15 >>> 16 & 0xff);
         o[63] = (byte) (x15 >>> 24 & 0xff);
-
+		
 		/*String dbgt = "";
 		for (int dbg = 0; dbg < o.length; dbg ++) dbgt += " "+o[dbg];
 		Log.d(TAG, "core_salsa20 -> "+dbgt);
@@ -1351,7 +1351,7 @@ public final class TweetNaclFast {
 
     // "expand 32-byte k"
     private static final byte[] sigma = {101, 120, 112, 97, 110, 100, 32, 51, 50, 45, 98, 121, 116, 101, 32, 107};
-
+	
 	/*static {
 		try {
 			sigma = "expand 32-byte k".getBytes("utf-8");
@@ -1430,11 +1430,11 @@ public final class TweetNaclFast {
 
     public static int crypto_stream_xor(byte [] c,int cpos, byte [] m,int mpos, long d, byte [] n, byte [] k) {
         byte [] s = new byte[32];
-
+		
 		/*String dbgt = "";
 		for (int dbg = 0; dbg < n.length; dbg ++) dbgt += " "+n[dbg];
 		Log.d(TAG, "crypto_stream_xor, nonce -> "+dbgt);
-
+		
 		dbgt = "";
 		for (int dbg = 0; dbg < k.length; dbg ++) dbgt += " "+k[dbg];
 		Log.d(TAG, "crypto_stream_xor, shk -> "+dbgt);
@@ -1745,9 +1745,9 @@ public final class TweetNaclFast {
                         /*
                         backport from tweetnacl-fast.js https://github.com/dchest/tweetnacl-js/releases/tag/v0.14.3
                         <<<
-                        "The issue was not properly detecting if st->h was >= 2^130 - 5,
+                        "The issue was not properly detecting if st->h was >= 2^130 - 5, 
                         coupled with [testing mistake] not catching the failure.
-                        The chance of the bug affecting anything in the real world is essentially zero luckily,
+                        The chance of the bug affecting anything in the real world is essentially zero luckily, 
                         but it's good to have it fixed."
                         >>>
                         */
@@ -1841,7 +1841,7 @@ public final class TweetNaclFast {
         poly1305 s = new poly1305(k);
         s.update(m, mpos, n);
         s.finish(out, outpos);
-
+		
 		/*String dbgt = "";
 		for (int dbg = 0; dbg < out.length-outpos; dbg ++) dbgt += " "+out[dbg+outpos];
 		Log.d(TAG, "crypto_onetimeauth -> "+dbgt);
@@ -2513,7 +2513,7 @@ public final class TweetNaclFast {
 		/*String dbgt = "";
 		for (int dbg = 0; dbg < s.length; dbg ++) dbgt += " "+s[dbg];
 		Log.d(TAG, "crypto_box_beforenm -> "+dbgt);
-
+		
 	    dbgt = "";
 		for (int dbg = 0; dbg < x.length; dbg ++) dbgt += " "+x[dbg];
 		Log.d(TAG, "crypto_box_beforenm, x -> "+dbgt);
@@ -2941,11 +2941,11 @@ public final class TweetNaclFast {
 
             pos += 128;
             n -= 128;
-
+				
 				/*dbgt = "";
 				for (int dbg = 0; dbg < hh.length; dbg ++) dbgt += " "+hh[dbg];
 				Log.d(TAG, "\ncrypto_hashblocks_hl hh -> "+dbgt);
-
+				
 				dbgt = "";
 				for (int dbg = 0; dbg < hl.length; dbg ++) dbgt += " "+hl[dbg];
 				Log.d(TAG, "\ncrypto_hashblocks_hl hl -> "+dbgt);*/
@@ -3354,7 +3354,7 @@ public final class TweetNaclFast {
         System.arraycopy(b, 0, x, 0, len);
         return x;
     }
-
+	
 /*
   public static byte[] randombytes(byte [] x, int len) {
 		int ret = len % 8;
@@ -3373,7 +3373,7 @@ public final class TweetNaclFast {
 			x[i+7] = (byte) (rnd >>> 56);
 		}
 
-		if (ret > 0) {
+		if (ret > 0) {         
 			rnd = jrandom.nextLong();
 			for (int i = len-ret; i < len; i ++)
 				x[i] = (byte) (rnd >>> 8*i);

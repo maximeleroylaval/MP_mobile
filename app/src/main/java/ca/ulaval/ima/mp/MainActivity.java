@@ -1,15 +1,14 @@
 package ca.ulaval.ima.mp;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -19,9 +18,9 @@ import java.io.IOException;
 import java.util.List;
 
 import ca.ulaval.ima.mp.models.Channel;
-import ca.ulaval.ima.mp.models.gateway.Gateway;
 import ca.ulaval.ima.mp.models.Guild;
 import ca.ulaval.ima.mp.models.Message;
+import ca.ulaval.ima.mp.models.gateway.Gateway;
 import ca.ulaval.ima.mp.models.gateway.voice.VoiceListener;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -31,6 +30,7 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     public Channel activeChannel = null;
+    public static boolean debug = true;
 
     protected void displayChannels(Response response, NavigationView navigationView) throws IOException {
         List<Channel> channels = Channel.sort(JSONHelper.asArray(Channel.class, response));
