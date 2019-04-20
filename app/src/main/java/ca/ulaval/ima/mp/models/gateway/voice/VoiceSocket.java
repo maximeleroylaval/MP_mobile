@@ -85,7 +85,7 @@ public class VoiceSocket {
 
     private void listen() {
         try {
-            socket.setSoTimeout(1);
+            socket.setSoTimeout(1000);
         } catch (SocketException e) {
             log("Couldn't set SO_TIMEOUT for UDP socket");
         }
@@ -102,9 +102,18 @@ public class VoiceSocket {
                             parseDiscovery(buffer);
                         } else if (isReady()) {
                             log("TRYING AUDIO INPUT");
-                            sendTask.run();
-                            ByteBuf buffer = receive(1920);
-                            receiveTask.run(buffer);
+                            ByteBuf buf = sendTask.run();
+                            if (buf != null) {
+                                send(buf);
+                                try {
+                                    Thread.sleep(19);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+//                            log("TRYING TO RECEIVE AUDIO");
+//                            ByteBuf buffer = receive(1920);
+//                            receiveTask.run(buffer);
                         }
                     } catch(IOException e) {
                         //log("Failed to receive data");
@@ -120,7 +129,7 @@ public class VoiceSocket {
         this.receiveTask = receiveTask;
     }
 
-    public static String bytesToHex(byte[] bytes) {
+    private static String bytesToHex(byte[] bytes) {
         char[] hexArray = "0123456789ABCDEF".toCharArray();
         char[] hexChars = new char[bytes.length * 2];
         for ( int j = 0; j < bytes.length; j++ ) {
@@ -131,7 +140,7 @@ public class VoiceSocket {
         return new String(hexChars);
     }
 
-    void send(ByteBuf data) {
+    private void send(ByteBuf data) {
         byte[] buffer = new byte[data.readableBytes()];
         data.getBytes(data.readerIndex(), buffer);
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length, new InetSocketAddress(ready.ip, ready.port));

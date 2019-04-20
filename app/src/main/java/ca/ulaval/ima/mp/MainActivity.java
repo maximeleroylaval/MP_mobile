@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     public Channel activeChannel = null;
-    public static boolean debug = true;
+    public static boolean debug = false;
 
     protected void displayChannels(Response response, NavigationView navigationView) throws IOException {
         List<Channel> channels = Channel.sort(JSONHelper.asArray(Channel.class, response));

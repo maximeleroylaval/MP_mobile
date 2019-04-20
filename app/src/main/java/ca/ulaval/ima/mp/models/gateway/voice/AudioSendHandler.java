@@ -81,30 +81,6 @@ public class AudioSendHandler extends IAudioSendHandler {
         }
     }
 
-    private byte[] readChunk(File opusFile) {
-        if (currentOffset > encryptedData.length) {
-            log("Reached end of song");
-            return new byte[0];
-        }
-        byte[] chunkData = new byte[AudioPacket.OPUS.FRAME_SIZE];
-        for (int i = 0; i < AudioPacket.OPUS.FRAME_SIZE && i + currentOffset < encryptedData.length; i++) {
-            chunkData[i] = encryptedData[currentOffset + i];
-        }
-        //saveChunk(chunkData);
-        currentOffset += AudioPacket.OPUS.FRAME_SIZE;
-        return chunkData;
-    }
-
-    private byte[] getOpusChunk() {
-        if (convertFile) {
-            log(wavFile.getAbsolutePath());
-            log(opusFile.getAbsolutePath());
-            convertFileToOpus(wavFile, opusFile);
-            convertFile = false;
-        }
-        return readChunk(opusFile);
-    }
-
     private static long byteAsULong(byte b) {
         return ((long)b) & 0x00000000000000FFL;
     }
@@ -116,9 +92,10 @@ public class AudioSendHandler extends IAudioSendHandler {
     private long mBitStream = 0;
     private long currentBitsream;
     private String mHead = null;
-    private List<Integer> segments;
+    private List<Integer> segments = new ArrayList<>();
     private int segmentCount = 0;
     private int currentSegmentCount = 0;
+    private List<Byte> frame;
 
     private boolean readHeader(byte[] buffer) {
         if(buffer.length - position <= 26) {
@@ -180,7 +157,6 @@ public class AudioSendHandler extends IAudioSendHandler {
             int uByte = myByte & (0xFF);
             if (uByte < 255) {
                 segments.add(size + uByte);
-                log("Segment value : " + segments.get(y));
                 y++;
                 size = 0;
             } else {
@@ -196,12 +172,10 @@ public class AudioSendHandler extends IAudioSendHandler {
             log("Error position");
             return false;
         }
-        //segments[currentSegmentCount] = AudioPacket.OPUS.FRAME_TIME;
         return true;
     }
 
-    private List<Byte> getOpusChunkFile(byte[] buffer) {
-        List<Byte> frame = new ArrayList<>();
+    private boolean getOpusChunkFile(byte[] buffer) {
         log("Position : " + position);
         position += segments.get(currentSegmentCount);
         log("Position after : " + position);
@@ -231,6 +205,10 @@ public class AudioSendHandler extends IAudioSendHandler {
                     // send data
                     frame.add(innerSegment[i]);
                 }
+                log("Packet number :" + nbPacket);
+                nbPacket++;
+                currentSegmentCount++;
+                return true;
             }
         } else if(myStrTag.equals("OpusHead")) {
             log("PACKET " + nbPacket);
@@ -241,39 +219,54 @@ public class AudioSendHandler extends IAudioSendHandler {
         }
         log("Packet number :" + nbPacket);
         nbPacket++;
-        return frame;
+        currentSegmentCount++;
+        return false;
     }
 
     private byte[] getChunk(List<Byte> frame) {
         byte[] chunk = new byte[frame.size()];
         for (int i = 0; i < chunk.length; i++) {
-            chunk[i] = frame.get(i + currentOffset);
+            chunk[i] = frame.get(i);
         }
         return chunk;
     }
 
+    private byte[] getPacketChunk(byte[] buffer, int size) {
+        frame = new ArrayList<>();
+        int i = 0;
+        for (; i < size; i++) {
+            log("I inner bcl : " + i);
+            if (position < buffer.length) {
+                if (currentSegmentCount < segments.size()) {
+                    log("Current segment count : " +  currentSegmentCount);
+                    if (!this.getOpusChunkFile(buffer)) {
+                        i--;
+                    }
+                } else {
+                    segmentCount = 0;
+                    currentSegmentCount = 0;
+                    if (this.readHeader(buffer)) {
+                        i--;
+                        log("SUCCESS");
+                        nbPages++;
+                    } else {
+                        break;
+                    }
+                }
+            } else {
+                break;
+            }
+        }
+        log("I:" + i);
+        log("Size:" + size);
+        if (i == size)
+            return this.getChunk(frame);
+        return new byte[0];
+    }
+
     @Override
     public boolean provide() {
-        //this.mAudioThread.getEncBuf();
-        //this.getOpusChunk();
-        byte[] opusChunk = new byte[0];
-        if (position < encryptedData.length) {
-            if (currentSegmentCount < segmentCount) {
-                log("Current segment count : " +  currentSegmentCount);
-                List<Byte> opusByteChunk = this.getOpusChunkFile(encryptedData);
-                opusChunk = this.getChunk(opusByteChunk);
-            } else {
-                if (this.readHeader(encryptedData)) {
-                    currentSegmentCount = 0;
-                    List<Byte> opusByteChunk = this.getOpusChunkFile(encryptedData);
-                    opusChunk = this.getChunk(opusByteChunk);
-                    log("SUCCESS");
-                    nbPages++;
-                }
-            }
-        } else {
-            opusChunk = new byte[0];
-        }
+        byte[] opusChunk = this.getPacketChunk(encryptedData, 1);
         log("Page number parsed : " + nbPages);
         log("OPUS CHUNK LEN :" +  String.valueOf(opusChunk.length));
         log("BUFFER LIMIT :" + String.valueOf(this.getBuffer().limit()));

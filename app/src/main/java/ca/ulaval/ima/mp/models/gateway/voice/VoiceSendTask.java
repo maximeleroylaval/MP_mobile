@@ -17,7 +17,7 @@ class VoiceSendTask {
         this.transformer = transformer;
     }
 
-    void run() {
+    ByteBuf run() {
         if (provider.provide()) {
             if (!speaking) {
                 changeSpeaking(true);
@@ -26,12 +26,11 @@ class VoiceSendTask {
             byte[] b = new byte[provider.getBuffer().limit()];
             provider.getBuffer().get(b);
             provider.getBuffer().clear();
-            ByteBuf packet = Unpooled.wrappedBuffer(transformer.nextSend(b));
-
-            client.voiceSocket.send(packet);
+            return Unpooled.wrappedBuffer(transformer.nextSend(b));
         } else if (speaking) {
             changeSpeaking(false);
         }
+        return null;
     }
 
     private void changeSpeaking(boolean speaking) {
