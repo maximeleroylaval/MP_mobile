@@ -17,7 +17,7 @@ class VoiceSendTask {
         this.transformer = transformer;
     }
 
-    public void run() {
+    void run() {
         if (provider.provide()) {
             if (!speaking) {
                 changeSpeaking(true);

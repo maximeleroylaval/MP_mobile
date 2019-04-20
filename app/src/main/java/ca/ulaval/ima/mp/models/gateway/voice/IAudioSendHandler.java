@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 
 public abstract class IAudioSendHandler {
 
-    private static final int DEFAULT_BUFFER_SIZE = AudioPacket.OPUS.FRAME_SIZE;
+    private static final int DEFAULT_BUFFER_SIZE = 1024 * 1024;
     public static final IAudioSendHandler NO_OP = new IAudioSendHandler(ByteBuffer.allocate(0)) {
         @Override
         public boolean provide() {

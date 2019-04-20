@@ -13,7 +13,7 @@ final class AudioPacket {
         static final int CHANNELS = 2;
         static final int FRAME_TIME = 20; // ms
         static final int SAMPLE_RATE = 48_000; // Hz
-        static final int FRAME_SIZE = SAMPLE_RATE / (1000 / FRAME_TIME); // per second
+        static final int FRAME_SIZE = SAMPLE_RATE / (1000 / FRAME_TIME); // 960 per second
     }
 
     private static final int RTP_HEADER_LENGTH = 12;

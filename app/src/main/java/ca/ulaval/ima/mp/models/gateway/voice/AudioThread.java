@@ -12,16 +12,18 @@ import com.score.rahasak.utils.OpusEncoder;
 
 import java.util.Arrays;
 
+import ca.ulaval.ima.mp.MainActivity;
+
 class AudioThread extends Thread {
 
     private byte[] encBuf = new byte[AudioPacket.OPUS.FRAME_SIZE];
 
-    public byte[] getEncBuf() {
+    byte[] getEncBuf() {
         return encBuf;
     }
 
-    public int getChannelCfg() {
-        return AudioPacket.OPUS.CHANNELS == 1 ? AudioFormat.CHANNEL_IN_MONO : AudioFormat.CHANNEL_IN_FRONT;
+    public static int getChannelCfg() {
+        return AudioPacket.OPUS.CHANNELS == 1 ? AudioFormat.CHANNEL_IN_MONO : AudioFormat.CHANNEL_IN_STEREO;
     }
 
     @Override
@@ -100,6 +102,7 @@ class AudioThread extends Thread {
     }
 
     private void log(String txt) {
-        Log.d("AUDIO THREAD", txt);
+        if (MainActivity.debug)
+            Log.d("AUDIO THREAD", txt);
     }
 }

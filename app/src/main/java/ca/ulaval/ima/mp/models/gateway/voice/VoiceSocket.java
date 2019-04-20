@@ -28,6 +28,7 @@ public class VoiceSocket {
     private DatagramSocket socket;
     private Callback discoveryCallback = null;
     private VoiceSendTask sendTask;
+    private VoiceReceiveTask receiveTask;
 
     public interface Callback {
         void onSuccess(String ip, Integer port);
@@ -84,7 +85,7 @@ public class VoiceSocket {
 
     private void listen() {
         try {
-            socket.setSoTimeout(AudioPacket.OPUS.FRAME_SIZE);
+            socket.setSoTimeout(1);
         } catch (SocketException e) {
             log("Couldn't set SO_TIMEOUT for UDP socket");
         }
@@ -103,7 +104,7 @@ public class VoiceSocket {
                             log("TRYING AUDIO INPUT");
                             sendTask.run();
                             ByteBuf buffer = receive(1920);
-//                            parseAudio(res);
+                            receiveTask.run(buffer);
                         }
                     } catch(IOException e) {
                         //log("Failed to receive data");
@@ -114,8 +115,9 @@ public class VoiceSocket {
         mainSocketThread.start();
     }
 
-    void start(VoiceSendTask sendTask) {
+    void start(VoiceSendTask sendTask, VoiceReceiveTask receiveTask) {
         this.sendTask = sendTask;
+        this.receiveTask = receiveTask;
     }
 
     public static String bytesToHex(byte[] bytes) {

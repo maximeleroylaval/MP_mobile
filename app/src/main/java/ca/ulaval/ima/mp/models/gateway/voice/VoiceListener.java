@@ -26,6 +26,7 @@ public class VoiceListener extends WebSocketListener {
     static VoiceSocket voiceSocket;
 
     private static IAudioSendHandler provider = new AudioSendHandler();
+    private static IAudioReceiveHandler receiver = new AudioReceiveHandler();
 
     public VoiceListener(Voice.State voiceState, Voice.Server voiceServer) {
         this.voiceState = voiceState;
@@ -84,11 +85,9 @@ public class VoiceListener extends WebSocketListener {
             AudioPacket transformer = new AudioPacket(ready.ssrc, boxer);
 
             VoiceSendTask sendingTask = new VoiceSendTask(VoiceListener.this, provider, transformer);
-//            VoiceReceiveTask receivingTask = new VoiceReceiveTask(voiceSocket.getInbound(), transformer, receiver);
+            VoiceReceiveTask receivingTask = new VoiceReceiveTask(receiver, transformer);
 
-            voiceSocket.start(sendingTask);
-
-            output("WaitingForSessionDescription -> ReceivingEvents");
+            voiceSocket.start(sendingTask, receivingTask);
         }
         if (heartbeatInterval != null && !payload.op.equals(Gateway.VOICE.OP.HEARTBEAT_ACK)) {
             heartbeatInterval.update(payload);
