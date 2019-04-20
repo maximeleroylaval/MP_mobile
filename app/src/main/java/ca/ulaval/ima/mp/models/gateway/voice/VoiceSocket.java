@@ -85,7 +85,7 @@ public class VoiceSocket {
 
     private void listen() {
         try {
-            socket.setSoTimeout(1000);
+            socket.setSoTimeout(1);
         } catch (SocketException e) {
             log("Couldn't set SO_TIMEOUT for UDP socket");
         }
@@ -106,7 +106,7 @@ public class VoiceSocket {
                             if (buf != null) {
                                 send(buf);
                                 try {
-                                    Thread.sleep(19);
+                                    Thread.sleep(AudioPacket.OPUS.FRAME_TIME - 1);
                                 } catch (InterruptedException e) {
                                     e.printStackTrace();
                                 }
@@ -116,7 +116,7 @@ public class VoiceSocket {
 //                            receiveTask.run(buffer);
                         }
                     } catch(IOException e) {
-                        //log("Failed to receive data");
+                        log("Failed to receive data");
                     }
                 }
             }

@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import ca.ulaval.ima.mp.JSONHelper;
+import ca.ulaval.ima.mp.MainActivity;
 import ca.ulaval.ima.mp.lib.TweetNaclFast;
 import ca.ulaval.ima.mp.models.Voice;
 import ca.ulaval.ima.mp.models.gateway.Gateway;
@@ -112,14 +113,19 @@ public class VoiceListener extends WebSocketListener {
     }
 
     private static void output(final String txt) {
-        Log.d("[WS] VOICE RECEIVED", txt);
+        log("Voice received : " + txt);
     }
 
     private static void input(final String txt) {
         if (txt != null && socket != null) {
-            Log.d("[WS] VOICE SENDING", txt);
+            log("Voice sending : " + txt);
             socket.send(txt);
         }
+    }
+
+    private static void log(String txt) {
+        if (MainActivity.debug)
+            Log.d("[WS]", txt);
     }
 
     @Override

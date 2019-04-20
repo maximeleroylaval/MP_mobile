@@ -5,6 +5,7 @@ import android.util.Log;
 import org.json.JSONObject;
 
 import ca.ulaval.ima.mp.JSONHelper;
+import ca.ulaval.ima.mp.MainActivity;
 import ca.ulaval.ima.mp.models.Channel;
 import ca.ulaval.ima.mp.models.Voice;
 import ca.ulaval.ima.mp.models.gateway.Gateway;
@@ -15,11 +16,11 @@ import okhttp3.WebSocketListener;
 import okio.ByteString;
 
 public class ServerListener extends WebSocketListener {
-    public Heartbeat.Interval heartbeatInterval = null;
-    public Ready ready = null;
-    public Voice.State voiceState = null;
-    public Voice.Server voiceServer = null;
-    public static WebSocket socket;
+    private Heartbeat.Interval heartbeatInterval = null;
+    private Ready ready = null;
+    private Voice.State voiceState = null;
+    private Voice.Server voiceServer = null;
+    private static WebSocket socket;
 
     public void joinVoiceChannel(Channel channel) {
         Voice.State voiceState = new Voice.State(channel);
@@ -27,7 +28,11 @@ public class ServerListener extends WebSocketListener {
         input(payload.toJSONString());
     }
 
-    public void handleMessage(WebSocket webSocket, String text) {
+    void sendHeartbeat(Payload heartbeat) {
+        input(new Heartbeat(heartbeat).toJSONString());
+    }
+
+    private void handleMessage(WebSocket webSocket, String text) {
         Payload payload = new Payload(JSONHelper.getJSONObject(text));
         if (payload.op.equals(Gateway.SERVER.OP.HELLO)) {
             heartbeatInterval = new Heartbeat.Interval(payload);
@@ -57,21 +62,26 @@ public class ServerListener extends WebSocketListener {
         }
     }
 
-    public void handleClosing(WebSocket webSocket, int code, String reason) {
+    private void handleClosing(WebSocket webSocket, int code, String reason) {
         if (heartbeatInterval != null) {
             heartbeatInterval.stop();
         }
     }
 
-    public void output(final String txt) {
-        Log.d("[WS] SERVER RECEIVED", txt);
+    private void output(final String txt) {
+        log("Server received : " + txt);
     }
 
-    public void input(final String txt) {
+    private void input(final String txt) {
         if (txt != null && socket != null) {
-            Log.d("[WS] SERVER SENDING", txt);
+            log("Server sending : " + txt);
             socket.send(txt);
         }
+    }
+
+    private void log(String txt) {
+        if (MainActivity.debug)
+            Log.d("[WS]", txt);
     }
 
     @Override

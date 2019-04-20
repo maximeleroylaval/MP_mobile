@@ -199,7 +199,7 @@ public class AudioSendHandler extends IAudioSendHandler {
 
         if(mHead != null) {
             if(myStrTag.equals("OpusTags")) {
-                //log("Inner segment opus tag : " + new String(innerSegment));
+                log("Inner segment opus tag : " + new String(innerSegment));
             } else if(mBitStream == currentBitsream) {
                 for (int i = 0; i < innerSegment.length; i++) {
                     // send data

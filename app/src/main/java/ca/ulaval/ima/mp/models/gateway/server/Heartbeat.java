@@ -11,21 +11,21 @@ import ca.ulaval.ima.mp.models.gateway.Payload;
 
 public class Heartbeat extends Payload {
     public static class Interval {
-        public Payload count = null;
-        public Integer heartbeatInterval;
-        public List<String> _trace;
+        Payload count = null;
+        Integer heartbeatInterval;
+        List<String> _trace;
 
-        public Thread thread = null;
-        public boolean started = true;
+        Thread thread = null;
+        boolean started = true;
 
-        public Interval(Payload payload) {
+        Interval(Payload payload) {
             JSONObject jsonObj = (JSONObject)payload.d;
             this.heartbeatInterval = JSONHelper.getInteger(jsonObj, "heartbeat_interval");
             this._trace = JSONHelper.asArrayWithConstructor(String.class, String.class, JSONHelper.getJSONArray(jsonObj, "_trace"));
             this.update(count);
         }
 
-        public void update(Payload payload) {
+        void update(Payload payload) {
             count = payload;
         }
 
@@ -36,7 +36,7 @@ public class Heartbeat extends Payload {
                     try {
                         while(started) {
                             TimeUnit.MILLISECONDS.sleep(heartbeatInterval);
-                            listener.input(new Heartbeat(count).toJSONString());
+                            listener.sendHeartbeat(count);
                         }
                     } catch (InterruptedException e) {
                         e.printStackTrace();
@@ -46,7 +46,7 @@ public class Heartbeat extends Payload {
             this.thread.start();
         }
 
-        public void stop() {
+        void stop() {
             this.started = false;
         }
     }
@@ -55,7 +55,7 @@ public class Heartbeat extends Payload {
         super(Gateway.SERVER.OP.HEARTBEAT, null, null, null);
     }
 
-    public Heartbeat(Payload payload) {
+    Heartbeat(Payload payload) {
         super(Gateway.SERVER.OP.HEARTBEAT, payload != null ? payload.s : null, null, null);
     }
 }
