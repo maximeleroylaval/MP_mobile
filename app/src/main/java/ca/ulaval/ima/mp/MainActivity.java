@@ -1,13 +1,8 @@
 package ca.ulaval.ima.mp;
 
-import android.Manifest;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
-import android.support.multidex.MultiDexApplication;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -19,14 +14,19 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 
+import com.nbsp.materialfilepicker.MaterialFilePicker;
+import com.nbsp.materialfilepicker.ui.FilePickerActivity;
+
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import ca.ulaval.ima.mp.models.Channel;
 import ca.ulaval.ima.mp.models.Guild;
 import ca.ulaval.ima.mp.models.Message;
 import ca.ulaval.ima.mp.models.gateway.Gateway;
-import ca.ulaval.ima.mp.models.gateway.voice.VoiceListener;
+import ca.ulaval.ima.mp.models.gateway.voice.Opus;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
@@ -34,8 +34,69 @@ import okhttp3.Response;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    public Channel activeChannel = null;
     public static boolean debug = false;
+    public Channel activeChannel = null;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        SDK.Initialize(this);
+        Opus.requestRecordPermission(this, this);
+
+        setContentView(R.layout.activity_main);
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.addDrawerListener(toggle);
+        toggle.syncState();
+
+        final NavigationView navigationView = findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+
+        SDK.getChannels(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Log.d("FAIL", "GET CHANNELS");
+            }
+
+            @Override
+            public void onResponse(Call call, final Response response) throws IOException {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            displayChannels(response, navigationView);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    public void sendMessage(View view) {
+        if (activeChannel == null || activeChannel.type != Channel.TYPES.GUILD_TEXT) {
+            SDK.displayMessage("Channel", "Please select a text channel before sending messages", null);
+            return;
+        }
+        final EditText messageView = findViewById(R.id.edit_message);
+        String message = messageView.getText().toString();
+        SDK.postMessage(message, activeChannel, new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                SDK.displayMessage("MESSAGE", "Failed to send your message", null);
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                messageView.setText("");
+            }
+        });
+    }
 
     protected void displayChannels(Response response, NavigationView navigationView) throws IOException {
         List<Channel> channels = Channel.sort(JSONHelper.asArray(Channel.class, response));
@@ -84,80 +145,6 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private static final int MY_PERMISSIONS_REQUEST_RECORD_AUDIO = 1;
-
-    protected void requestRecordPermission() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                    new String[] { Manifest.permission.RECORD_AUDIO },
-                    MY_PERMISSIONS_REQUEST_RECORD_AUDIO);
-        }
-    }
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        SDK.Initialize(this);
-        Gateway.Initialize();
-
-        setContentView(R.layout.activity_main);
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.addDrawerListener(toggle);
-        toggle.syncState();
-
-        final NavigationView navigationView = findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
-
-        this.requestRecordPermission();
-
-        SDK.getChannels(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                Log.d("FAIL", "GET CHANNELS");
-            }
-
-            @Override
-            public void onResponse(Call call, final Response response) throws IOException {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            displayChannels(response, navigationView);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                });
-            }
-        });
-    }
-
-    public void sendMessage(View view) {
-        if (activeChannel == null || activeChannel.type != Channel.TYPES.GUILD_TEXT) {
-            SDK.displayMessage("Channel", "Please select a text channel before sending messages", null);
-            return;
-        }
-        final EditText messageView = findViewById(R.id.edit_message);
-        String message = messageView.getText().toString();
-        SDK.postMessage(message, activeChannel, new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                SDK.displayMessage("MESSAGE", "Failed to send your message", null);
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                messageView.setText("");
-            }
-        });
-    }
-
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
@@ -176,22 +163,46 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == 1 && resultCode == RESULT_OK) {
+            String path = data.getStringExtra(FilePickerActivity.RESULT_FILE_PATH);
+            if (path != null && !path.equals("")) {
+                File file = new File(path);
+                Gateway.voice.playFile(file);
+            }
+        }
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_add_bot) {
             Intent intent = new Intent(this, LoginActivity.class);
             startActivity(intent);
             return true;
         }
 
+        if (id == R.id.action_play_file) {
+            Intent intent = new Intent(this, FileManager.class);
+            intent.putExtra(FilePickerActivity.ARG_FILTER, Pattern.compile(".*\\.opus"));
+            intent.putExtra(FilePickerActivity.ARG_CLOSEABLE, true);
+            intent.putExtra(FilePickerActivity.ARG_TITLE, getString(R.string.choose_file));
+            intent.putExtra(FilePickerActivity.ARG_START_PATH, FileManager.sdcard.getAbsolutePath());
+            startActivityForResult(intent, 1);
+            return true;
+        }
+
+        if (id == R.id.action_stop_file) {
+            Gateway.voice.stopPlaying();
+            return true;
+        }
+
         if (id == R.id.action_disconnect) {
-            VoiceListener.speak(false);
-            VoiceListener.disconnect();
+            Gateway.voice.disconnect();
+            return true;
         }
 
         if (id == R.id.action_list_members) {
@@ -218,7 +229,6 @@ public class MainActivity extends AppCompatActivity
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
         int id = item.getItemId();
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);

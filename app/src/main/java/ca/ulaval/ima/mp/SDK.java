@@ -22,6 +22,7 @@ import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 
 import ca.ulaval.ima.mp.models.Channel;
+import ca.ulaval.ima.mp.models.gateway.Gateway;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.FormBody;
@@ -35,45 +36,38 @@ import okhttp3.logging.HttpLoggingInterceptor;
 public class SDK {
 
     private static String scheme = "https";
-
     private static String host = "discordapp.com";
-
     private static String version = "api";
 
     private static String clientId = "408378466220638218";
-
     private static String clientSecret = "9H30Ge-eVQNkXwskPVy8HrAQFPsQ9Wk6";
 
+    private static String token;
+    private static String refreshToken;
     public static String botToken = "NDA4Mzc4NDY2MjIwNjM4MjE4.XLS-pw.dbU0HB20CFITP-MSE9VRarbNDtg";
 
     public static String state = "0986545678";
-
     private static String scope = "bot";
-
     private static String guild_id = "391260010728128512";
 
-    private static String token;
-
-    private static String refreshToken;
-
-    public static OkHttpClient client;
-
     public static Context mainContext = null;
+    public static OkHttpClient client = null;
+    public static Gateway gateway = null;
 
     static void setGuildId(String guild_id) {
         SDK.guild_id = guild_id;
     }
 
-    static void setToken(String token, String refreshToken) {
+    private static void setToken(String token, String refreshToken) {
         SDK.token = token;
         SDK.refreshToken = refreshToken;
     }
 
-    static void addAuthorization(Request.Builder builder) {
+    private static void addAuthorization(Request.Builder builder) {
         builder.addHeader("Authorization", "Bot " + SDK.botToken);
     }
 
-    static String BuildURL(String target) {
+    private static String BuildURL(String target) {
         return SDK.scheme + "://" + SDK.host + "/" + version + "/" + target;
     }
 
@@ -85,9 +79,11 @@ public class SDK {
         client = new OkHttpClient.Builder()
                 .addInterceptor(logInterceptor)
                 .build();
+
+        gateway = new Gateway();
     }
 
-    public static void displayMessage(Context context, String title, String message, DialogInterface.OnClickListener listener) {
+    static void displayMessage(Context context, String title, String message, DialogInterface.OnClickListener listener) {
         new AlertDialog.Builder(context)
                 .setTitle(title)
                 .setMessage(message)
@@ -95,7 +91,7 @@ public class SDK {
                 .show();
     }
 
-    public static void displayMessage(String title, String message, DialogInterface.OnClickListener listener) {
+    static void displayMessage(String title, String message, DialogInterface.OnClickListener listener) {
         SDK.displayMessage(mainContext, title, message, listener);
     }
 

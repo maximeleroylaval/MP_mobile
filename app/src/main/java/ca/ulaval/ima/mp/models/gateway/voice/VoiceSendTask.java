@@ -34,7 +34,7 @@ class VoiceSendTask {
     }
 
     private void changeSpeaking(boolean speaking) {
-        VoiceListener.speak(speaking);
+        client.speak(speaking);
         this.speaking = speaking;
     }
 }

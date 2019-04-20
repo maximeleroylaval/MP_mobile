@@ -13,4 +13,7 @@
     <string name="actions_send_message">Envoyer un message</string>
     <string name="send">Envoyer</string>
     <string name="action_disconnect">Se déconnecter</string>
+    <string name="action_play_file">Jouer un son (.ogg)</string>
+    <string name="action_stop_file">Arrêter le son</string>
+    <string name="choose_file">Choisir un fichier</string>
 </resources>

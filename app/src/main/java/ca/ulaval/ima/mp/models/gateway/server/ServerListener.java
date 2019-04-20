@@ -20,7 +20,7 @@ public class ServerListener extends WebSocketListener {
     private Ready ready = null;
     private Voice.State voiceState = null;
     private Voice.Server voiceServer = null;
-    private static WebSocket socket;
+    private WebSocket socket;
 
     public void joinVoiceChannel(Channel channel) {
         Voice.State voiceState = new Voice.State(channel);

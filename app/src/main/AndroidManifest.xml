@@ -35,6 +35,8 @@
                 <data android:scheme="miniproject"/>
             </intent-filter>
         </activity>
+        <activity android:name=".FileManager" android:theme="@style/AppTheme.NoActionBar">
+        </activity>
     </application>
 
 </manifest>

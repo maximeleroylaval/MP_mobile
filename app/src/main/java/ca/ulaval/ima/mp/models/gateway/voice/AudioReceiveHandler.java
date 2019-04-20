@@ -1,17 +1,17 @@
 package ca.ulaval.ima.mp.models.gateway.voice;
 
-import android.util.Log;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-public class AudioReceiveHandler extends IAudioReceiveHandler {
-    File file = new File(AudioSendHandler.sdcard, "channel.opus");
-    FileOutputStream outStream;
+import ca.ulaval.ima.mp.FileManager;
 
-    public AudioReceiveHandler() {
+public class AudioReceiveHandler extends IAudioReceiveHandler {
+    private File file = new File(FileManager.sdcard, "channel.opus");
+    private FileOutputStream outStream;
+
+    AudioReceiveHandler() {
         try {
             outStream = new FileOutputStream(file, true);
         } catch (FileNotFoundException e) {

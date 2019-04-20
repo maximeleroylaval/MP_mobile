@@ -13,13 +13,14 @@ import ca.ulaval.ima.mp.MainActivity;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 
-public class VoiceSocket {
+class VoiceSocket {
 
     private static final int BYTE_SIZE = 8;
     private static final int SHORT_SIZE = 16;
     private static final int SHORT_BYTES = SHORT_SIZE / BYTE_SIZE;
     private static final int INTEGER_SIZE = 32;
     private static final int INTEGER_BYTES = INTEGER_SIZE / BYTE_SIZE;
+
     static final String PROTOCOL = "udp";
     static final String ENCRYPTION_MODE = "xsalsa20_poly1305";
     private static final int DISCOVERY_PACKET_LENGTH = 70;
@@ -84,11 +85,6 @@ public class VoiceSocket {
     }
 
     private void listen() {
-        try {
-            socket.setSoTimeout(1);
-        } catch (SocketException e) {
-            log("Couldn't set SO_TIMEOUT for UDP socket");
-        }
         Thread mainSocketThread = new Thread() {
             @Override
             public void run() {
@@ -106,14 +102,16 @@ public class VoiceSocket {
                             if (buf != null) {
                                 send(buf);
                                 try {
-                                    Thread.sleep(AudioPacket.OPUS.FRAME_TIME - 1);
+                                    Thread.sleep(Opus.CONFIG.FRAME_TIME - 1);
                                 } catch (InterruptedException e) {
                                     e.printStackTrace();
                                 }
                             }
-//                            log("TRYING TO RECEIVE AUDIO");
-//                            ByteBuf buffer = receive(1920);
-//                            receiveTask.run(buffer);
+                            /*
+                            log("TRYING TO RECEIVE AUDIO");
+                            ByteBuf buffer = receive(1920);
+                            receiveTask.run(buffer);
+                            */
                         }
                     } catch(IOException e) {
                         log("Failed to receive data");

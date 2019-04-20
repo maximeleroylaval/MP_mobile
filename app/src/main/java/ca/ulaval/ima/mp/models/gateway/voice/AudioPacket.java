@@ -1,5 +1,6 @@
 package ca.ulaval.ima.mp.models.gateway.voice;
 
+import android.media.AudioFormat;
 import android.support.annotation.Nullable;
 
 import java.nio.ByteBuffer;
@@ -8,14 +9,6 @@ import ca.ulaval.ima.mp.lib.TweetNaclFast;
 import io.netty.buffer.ByteBuf;
 
 final class AudioPacket {
-
-    static class OPUS {
-        static final int CHANNELS = 2;
-        static final int FRAME_TIME = 20; // ms
-        static final int SAMPLE_RATE = 48_000; // Hz
-        static final int FRAME_SIZE = SAMPLE_RATE / (1000 / FRAME_TIME); // 960 per second
-    }
-
     private static final int RTP_HEADER_LENGTH = 12;
     private static final int EXTENDED_RTP_HEADER_LENGTH = 24;
 
@@ -68,7 +61,7 @@ final class AudioPacket {
                 .put((byte) 0x80)
                 .put((byte) 0x78)
                 .putChar(seq)
-                .putInt(seq * OPUS.FRAME_SIZE)
+                .putInt(seq * Opus.CONFIG.FRAME_SIZE)
                 .putInt(ssrc)
                 .array();
     }

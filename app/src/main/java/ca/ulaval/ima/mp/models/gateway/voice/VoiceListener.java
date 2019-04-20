@@ -4,6 +4,7 @@ import android.util.Log;
 
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
@@ -20,14 +21,14 @@ import okio.ByteString;
 
 public class VoiceListener extends WebSocketListener {
     private Heartbeat.Interval heartbeatInterval = null;
-    private static Voice.State voiceState;
-    private static Voice.Server voiceServer;
-    private static Ready ready;
-    private static WebSocket socket;
-    static VoiceSocket voiceSocket;
+    private Voice.State voiceState;
+    private Voice.Server voiceServer;
+    private Ready ready;
+    private WebSocket socket;
+    private VoiceSocket voiceSocket;
 
-    private static IAudioSendHandler provider = new AudioSendHandler();
-    private static IAudioReceiveHandler receiver = new AudioReceiveHandler();
+    private AudioSendHandler provider = new AudioSendHandler();
+    private AudioReceiveHandler receiver = new AudioReceiveHandler();
 
     public VoiceListener(Voice.State voiceState, Voice.Server voiceServer) {
         this.voiceState = voiceState;
@@ -101,22 +102,31 @@ public class VoiceListener extends WebSocketListener {
         }
     }
 
-    public static void disconnect() {
-        Payload payloadSpeaking = new Payload(Gateway.VOICE.OP.CLIENT_DISCONNECT, new Disconnect(voiceState.userId), null, null);
-        input(payloadSpeaking.toJSONString());
-    }
-
-    public static void speak(Boolean isSpeaking) {
+    void speak(Boolean isSpeaking) {
         Speaking speaking = new Speaking(isSpeaking, 0, ready.ssrc);
         Payload payloadSpeaking = new Payload(Gateway.VOICE.OP.SPEAKING, speaking, null, null);
         input(payloadSpeaking.toJSONString());
     }
 
-    private static void output(final String txt) {
+    public boolean playFile(File file) {
+        provider.stopPlaying();
+        return provider.playOpusFile(file);
+    }
+
+    public void stopPlaying() {
+        provider.stopPlaying();
+    }
+
+    public void disconnect() {
+        Payload payloadSpeaking = new Payload(Gateway.VOICE.OP.CLIENT_DISCONNECT, new Disconnect(voiceState.userId), null, null);
+        input(payloadSpeaking.toJSONString());
+    }
+
+    private void output(final String txt) {
         log("Voice received : " + txt);
     }
 
-    private static void input(final String txt) {
+    private void input(final String txt) {
         if (txt != null && socket != null) {
             log("Voice sending : " + txt);
             socket.send(txt);

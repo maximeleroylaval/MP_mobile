@@ -1,12 +1,12 @@
 package ca.ulaval.ima.mp.models.gateway;
 
-import android.content.Context;
 import android.util.Log;
 
 import java.io.IOException;
 
-import ca.ulaval.ima.mp.SDK;
 import ca.ulaval.ima.mp.JSONHelper;
+import ca.ulaval.ima.mp.MainActivity;
+import ca.ulaval.ima.mp.SDK;
 import ca.ulaval.ima.mp.models.Voice;
 import ca.ulaval.ima.mp.models.gateway.server.Bot;
 import ca.ulaval.ima.mp.models.gateway.server.ServerListener;
@@ -65,50 +65,15 @@ public class Gateway {
     }
 
     public static Integer version = 6;
-
     public static String encoding = "json";
+    public static ServerListener server = null;
+    public static VoiceListener voice = null;
 
-    public static ServerListener server;
-
-    public static VoiceListener voice;
-
-    public static HttpUrl getServerGateway(String host) {
-        Request req = new Request.Builder().url(host).build();
-        HttpUrl url = new HttpUrl.Builder()
-                .scheme(req.url().scheme())
-                .host(req.url().host())
-                .addQueryParameter("v", Gateway.version.toString())
-                .addQueryParameter("encoding", Gateway.encoding)
-                .build();
-        return url;
-    }
-
-    public static HttpUrl getVoiceGateway(String host) {
-        return getServerGateway("wss://" + (host != null ? host : ""));
-    }
-
-    public static WebSocket createWebSocket(HttpUrl url, WebSocketListener listener) {
-        Request request = new Request.Builder().url(url).build();
-        WebSocket ws = SDK.client.newWebSocket(request, listener);
-        return ws;
-    }
-
-    public static void establishVoiceConnection(Voice.State voiceState, Voice.Server voiceServer) {
-        Log.d("INSTANTIATE", "VOICE CONNECTION TO : " + getVoiceGateway(voiceServer.endpoint));
-        voice = new VoiceListener(voiceState, voiceServer);
-        createWebSocket(getVoiceGateway(voiceServer.endpoint), voice);
-    }
-
-    public static void establishServerConnection(Bot botGateway) {
-        server = new ServerListener();
-        createWebSocket(getServerGateway(botGateway.url), server);
-    }
-
-    public static void Initialize() {
+    public Gateway() {
         SDK.getGatewayBot(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                Log.d("FAIL", "Gateway wss url retrieving");
+                log("Failed to retrieve wss url");
             }
 
             @Override
@@ -117,5 +82,40 @@ public class Gateway {
                 establishServerConnection(botGateway);
             }
         });
+    }
+
+    private static HttpUrl getServerGateway(String host) {
+        Request req = new Request.Builder().url(host).build();
+        return new HttpUrl.Builder()
+                .scheme(req.url().scheme())
+                .host(req.url().host())
+                .addQueryParameter("v", Gateway.version.toString())
+                .addQueryParameter("encoding", Gateway.encoding)
+                .build();
+    }
+
+    private static HttpUrl getVoiceGateway(String host) {
+        return getServerGateway("wss://" + (host != null ? host : ""));
+    }
+
+    private static WebSocket createWebSocket(HttpUrl url, WebSocketListener listener) {
+        Request request = new Request.Builder().url(url).build();
+        return SDK.client.newWebSocket(request, listener);
+    }
+
+    private static void establishServerConnection(Bot botGateway) {
+        server = new ServerListener();
+        createWebSocket(getServerGateway(botGateway.url), server);
+    }
+
+    public static void establishVoiceConnection(Voice.State voiceState, Voice.Server voiceServer) {
+        log("INSTANTIATE VOICE CONNECTION TO : " + getVoiceGateway(voiceServer.endpoint));
+        voice = new VoiceListener(voiceState, voiceServer);
+        createWebSocket(getVoiceGateway(voiceServer.endpoint), voice);
+    }
+
+    private static void log(String txt) {
+        if (MainActivity.debug)
+            Log.d("[GATEWAY]", txt);
     }
 }
