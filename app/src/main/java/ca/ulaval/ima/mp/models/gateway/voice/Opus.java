@@ -84,7 +84,7 @@ public class Opus {
         }
 
         if(!new String(name).equals("OggS")) {
-            log("Invalid ogg magic string");
+            log("Invalid ogg magic string : " + new String(name));
             return false;
         }
 
@@ -112,7 +112,7 @@ public class Opus {
 
         position += 26;
 
-        segmentCount = buffer[position];
+        segmentCount = buffer[position] & (0xFF);
         if(buffer.length - position - 1 < segmentCount) {
             log("Error segment size");
             return false;
@@ -136,9 +136,12 @@ public class Opus {
             } else {
                 size += uByte;
             }
+            log("uByte : " + uByte);
             total += uByte;
             i++;
         }
+
+        log("Number of segments : " + segments.size());
 
         position++;
 
@@ -164,7 +167,7 @@ public class Opus {
 
         byte[] myTag = new byte[8];
         y = 0;
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < 8 && i < innerSegment.length; i++) {
             myTag[i] = innerSegment[i];
         }
         String myStrTag = new String(myTag);
@@ -247,6 +250,11 @@ public class Opus {
                     new String[] { Manifest.permission.RECORD_AUDIO },
                     MY_PERMISSIONS_REQUEST_RECORD_AUDIO);
         }
+    }
+
+    public interface Callback {
+        void onSuccess(File file);
+        void onFailure(String message);
     }
 
     byte[] getPacket() {

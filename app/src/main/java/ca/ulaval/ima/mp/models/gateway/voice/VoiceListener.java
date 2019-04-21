@@ -1,5 +1,6 @@
 package ca.ulaval.ima.mp.models.gateway.voice;
 
+import android.content.Context;
 import android.util.Log;
 
 import org.json.JSONObject;
@@ -8,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import ca.ulaval.ima.mp.FileManager;
 import ca.ulaval.ima.mp.JSONHelper;
 import ca.ulaval.ima.mp.MainActivity;
 import ca.ulaval.ima.mp.lib.TweetNaclFast;
@@ -108,9 +110,31 @@ public class VoiceListener extends WebSocketListener {
         input(payloadSpeaking.toJSONString());
     }
 
-    public boolean playFile(File file) {
-        provider.stopPlaying();
-        return provider.playOpusFile(file);
+    public boolean playFile(Context context, File file) {
+        String fileName = file.getName();
+        int pos = fileName.lastIndexOf(".");
+        if (pos > 0) {
+            String extension = fileName.substring(pos);
+            if (!extension.equals(".opus")) {
+                FileManager.convertToOpus(context, file, new Opus.Callback() {
+                    @Override
+                    public void onSuccess(File file) {
+                        provider.stopPlaying();
+                        provider.playOpusFile(file);
+                    }
+
+                    @Override
+                    public void onFailure(String message) {
+                        log("Failed to play : " + message);
+                    }
+                });
+                return true;
+            } else {
+                provider.stopPlaying();
+                return provider.playOpusFile(file);
+            }
+        }
+        return false;
     }
 
     public void stopPlaying() {

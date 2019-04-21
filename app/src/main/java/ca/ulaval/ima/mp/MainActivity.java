@@ -170,7 +170,8 @@ public class MainActivity extends AppCompatActivity
             String path = data.getStringExtra(FilePickerActivity.RESULT_FILE_PATH);
             if (path != null && !path.equals("")) {
                 File file = new File(path);
-                Gateway.voice.playFile(file);
+                Log.d("[RESULT]","Path:" + path);
+                Gateway.voice.playFile(this, file);
             }
         }
     }
@@ -187,7 +188,7 @@ public class MainActivity extends AppCompatActivity
 
         if (id == R.id.action_play_file) {
             Intent intent = new Intent(this, FileManager.class);
-            intent.putExtra(FilePickerActivity.ARG_FILTER, Pattern.compile(".*\\.opus"));
+//            intent.putExtra(FilePickerActivity.ARG_FILTER, Pattern.compile(".*\\.opus"));
             intent.putExtra(FilePickerActivity.ARG_CLOSEABLE, true);
             intent.putExtra(FilePickerActivity.ARG_TITLE, getString(R.string.choose_file));
             intent.putExtra(FilePickerActivity.ARG_START_PATH, FileManager.sdcard.getAbsolutePath());

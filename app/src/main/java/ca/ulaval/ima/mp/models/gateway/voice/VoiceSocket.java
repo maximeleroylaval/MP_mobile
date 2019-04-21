@@ -102,7 +102,7 @@ class VoiceSocket {
                             if (buf != null) {
                                 send(buf);
                                 try {
-                                    Thread.sleep(Opus.CONFIG.FRAME_TIME - 1);
+                                    Thread.sleep(Opus.CONFIG.FRAME_TIME - 3);
                                 } catch (InterruptedException e) {
                                     e.printStackTrace();
                                 }
