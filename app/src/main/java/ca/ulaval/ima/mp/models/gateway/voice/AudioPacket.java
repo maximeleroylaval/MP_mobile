@@ -1,6 +1,5 @@
 package ca.ulaval.ima.mp.models.gateway.voice;
 
-import android.media.AudioFormat;
 import android.support.annotation.Nullable;
 
 import java.nio.ByteBuffer;

@@ -1,5 +1,6 @@
 package ca.ulaval.ima.mp.models.gateway.voice;
 
+import android.graphics.Path;
 import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
@@ -88,6 +89,7 @@ class VoiceSocket {
         Thread mainSocketThread = new Thread() {
             @Override
             public void run() {
+                long startTime = -1;
                 log("LISTENING");
                 while (true) {
                     try {
@@ -100,18 +102,18 @@ class VoiceSocket {
                             log("TRYING AUDIO INPUT");
                             ByteBuf buf = sendTask.run();
                             if (buf != null) {
-                                send(buf);
                                 try {
-                                    Thread.sleep(Opus.CONFIG.FRAME_TIME - 3);
+                                    long timeElapsed = System.currentTimeMillis() - startTime + 1;
+                                    if (timeElapsed > Opus.CONFIG.FRAME_TIME) {
+                                        timeElapsed = Opus.CONFIG.FRAME_TIME;
+                                    }
+                                    Thread.sleep(Opus.CONFIG.FRAME_TIME - timeElapsed);
+                                    send(buf);
+                                    startTime = System.currentTimeMillis();
                                 } catch (InterruptedException e) {
                                     e.printStackTrace();
                                 }
                             }
-                            /*
-                            log("TRYING TO RECEIVE AUDIO");
-                            ByteBuf buffer = receive(1920);
-                            receiveTask.run(buffer);
-                            */
                         }
                     } catch(IOException e) {
                         log("Failed to receive data");

@@ -17,11 +17,12 @@ import ca.ulaval.ima.mp.MainActivity;
 import top.oply.opuslib.OpusTool;
 
 public class Opus {
-    static class CONFIG {
-        static final int CHANNELS = 2;
-        static final int FRAME_TIME = 20; // ms
-        static final int SAMPLE_RATE = 48_000; // Hz
-        static final int FRAME_SIZE = SAMPLE_RATE / (1000 / FRAME_TIME); // 960 per second
+    public static class CONFIG {
+        public static final int CHANNELS = 2;
+        public static final int FRAME_TIME = 20; // ms
+        public static final int SAMPLE_RATE = 48_000; // Hz
+        public static final int FRAME_SIZE = SAMPLE_RATE / (1000 / FRAME_TIME); // 960 per second
+        public static final int PACKET_PER_CHUNK = 1;
     }
 
     private long mBitStream = 0;
@@ -252,13 +253,8 @@ public class Opus {
         }
     }
 
-    public interface Callback {
-        void onSuccess(File file);
-        void onFailure(String message);
-    }
-
     byte[] getPacket() {
-        return this.getPacketChunk(encryptedData, 1);
+        return this.getPacketChunk(encryptedData, CONFIG.PACKET_PER_CHUNK);
     }
 
     private void log(String txt) {
