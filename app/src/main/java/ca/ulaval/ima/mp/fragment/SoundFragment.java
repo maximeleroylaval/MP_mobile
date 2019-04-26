@@ -64,17 +64,17 @@ public class SoundFragment extends Fragment {
         mListener.onPlayFile();
     }
 
-    public void onDisconnect() {
+    public void onDisconnect(boolean fromDestroy) {
         Gateway.voice.stopPlaying();
         Gateway.server.leaveVoiceChannel();
-        if (getActivity() != null) {
+        if (!fromDestroy && getActivity() != null) {
             getActivity().getSupportFragmentManager().popBackStack();
         }
     }
 
     @Override
     public void onDestroy() {
-        onDisconnect();
+        onDisconnect(true);
         super.onDestroy();
     }
 
@@ -127,7 +127,7 @@ public class SoundFragment extends Fragment {
         disconnectButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                onDisconnect();
+                onDisconnect(false);
             }
         });
     }
