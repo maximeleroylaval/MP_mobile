@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/frameContainer"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="80"
+        android:orientation="vertical">
+        <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="6dp">
+            <TextView
+                android:id="@+id/details"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                />
+        </ScrollView>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_weight="20"
+        android:layout_height="0dp"
+        android:orientation="vertical"
+        android:gravity="bottom">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="60"
+            android:padding="4dp"
+            android:orientation="horizontal">
+            <Button
+                android:id="@+id/action_play_file"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="33"
+                android:layout_marginRight="6dp"
+                android:layout_marginEnd="6dp"
+                android:text="@string/action_play_file"
+                android:background="@color/success"
+                />
+            <Button
+                android:id="@+id/action_stop_file"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="33"
+                android:layout_marginRight="6dp"
+                android:layout_marginEnd="6dp"
+                android:text="@string/action_stop_file"
+                android:background="@color/colorPrimaryDark"
+                />
+            <Button
+                android:id="@+id/action_import_file"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="33"
+                android:text="@string/action_import_file"
+                android:background="@color/info"
+                />
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="40"
+            android:gravity="bottom"
+            android:orientation="vertical" >
+            <Button
+                android:id="@+id/action_voice_disconnect"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/warning"
+                android:text="@string/action_voice_disconnect"
+                />
+        </LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>

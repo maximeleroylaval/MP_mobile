@@ -11,7 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:textColor="@color/colorAccent"
-        android:textSize="20sp"
+        android:textSize="@dimen/text_title"
         />
 
 </LinearLayout>

@@ -15,9 +15,13 @@
     <string name="action_disconnect">Se déconnecter</string>
     <string name="action_play_file">Jouer un son</string>
     <string name="action_import_file">Importer un son</string>
-    <string name="action_stop_file">Arrêter le son</string>
+    <string name="action_stop_file">Arrêter de diffuser</string>
     <string name="choose_file">Choisir un fichier</string>
     <string name="file_to_convert">Fichier à convertir</string>
     <string name="progress">Progression</string>
     <string name="details">Details</string>
+    <string name="file_loaded">Fichier chargé</string>
+    <string name="action_voice_disconnect">Quitter le salon vocal</string>
+    <string name="none">Aucun</string>
+    <string name="file_song_details">Details du fichier</string>
 </resources>
