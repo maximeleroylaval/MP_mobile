@@ -124,6 +124,10 @@ public class VoiceListener extends WebSocketListener {
         return provider.playOpusFile(file);
     }
 
+    public boolean isPlaying() {
+        return provider.isPlaying();
+    }
+
     public void stopPlaying() {
         provider.stopPlaying();
     }

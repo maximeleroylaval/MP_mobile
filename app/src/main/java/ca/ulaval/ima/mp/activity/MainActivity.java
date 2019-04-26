@@ -12,30 +12,24 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import com.nbsp.materialfilepicker.ui.FilePickerActivity;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.List;
 import java.util.regex.Pattern;
 
 import ca.ulaval.ima.mp.R;
 import ca.ulaval.ima.mp.fragment.ChannelFragment;
 import ca.ulaval.ima.mp.fragment.FileConverterFragment;
+import ca.ulaval.ima.mp.fragment.MemberFragment;
 import ca.ulaval.ima.mp.fragment.MessageFragment;
 import ca.ulaval.ima.mp.fragment.SoundFragment;
+import ca.ulaval.ima.mp.gateway.Gateway;
 import ca.ulaval.ima.mp.gateway.voice.Opus;
-import ca.ulaval.ima.mp.sdk.JSONHelper;
 import ca.ulaval.ima.mp.sdk.SDK;
 import ca.ulaval.ima.mp.sdk.models.Channel;
-import ca.ulaval.ima.mp.sdk.models.Guild;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
@@ -44,7 +38,10 @@ public class MainActivity extends AppCompatActivity
         SoundFragment.OnSoundFragmentInteractionListener {
 
     public static boolean debug = false;
-    public Fragment mainFragment = null;
+
+    public SoundFragment soundFragment = null;
+    public MessageFragment messageFragment = null;
+    public FileConverterFragment convertFragment = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,11 +59,13 @@ public class MainActivity extends AppCompatActivity
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = findViewById(R.id.nav_view);
+        NavigationView navigationView = findViewById(R.id.nav_left_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        Fragment fragment = ChannelFragment.newInstance();
-        this.setNavigationFragment(fragment);
+        NavigationView navigationRightView = findViewById(R.id.nav_right_view);
+        navigationRightView.setNavigationItemSelectedListener(this);
+
+        this.setLeftNavigationFragment(ChannelFragment.newInstance());
     }
 
     @Override
@@ -74,8 +73,15 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
+        } else if (drawer.isDrawerOpen(GravityCompat.END)) {
+            drawer.closeDrawer(GravityCompat.END);
         } else {
-            super.onBackPressed();
+            Fragment myFragment = getSupportFragmentManager().findFragmentByTag(FileConverterFragment.class.getName());
+            if (myFragment != null && myFragment.isVisible() && soundFragment != null) {
+                setMainFragment(soundFragment);
+            } else {
+                super.onBackPressed();
+            }
         }
     }
 
@@ -86,22 +92,33 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    public void setFragment(Fragment fragment, @IdRes int id) {
+    public void removeMainFragment(Fragment fragment) {
+        if (fragment == null) {
+            return;
+        }
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(id, fragment);
+        fragmentTransaction.remove(fragment);
+        fragmentTransaction.commit();
+    }
+
+    public void setFragment(Fragment fragment, @IdRes int id) {
+        if (fragment == null) {
+            return;
+        }
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(id, fragment, fragment.getClass().getName());
         fragmentTransaction.addToBackStack(fragment.toString());
         fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
         fragmentTransaction.commit();
     }
 
-    public void setNavigationFragment(Fragment fragment) { setFragment(fragment, R.id.navContainer); }
+    public void setLeftNavigationFragment(Fragment fragment) { setFragment(fragment, R.id.navLeftContainer); }
+
+    public void setRightNavigationFragment(Fragment fragment) { setFragment(fragment, R.id.navRightContainer); }
 
     public void setMainFragment(Fragment fragment) {
-        if (mainFragment != null) {
-            getSupportFragmentManager().beginTransaction().remove(mainFragment).commit();
-        }
-        mainFragment = fragment;
         setFragment(fragment, R.id.frameContainer);
     }
 
@@ -115,22 +132,10 @@ public class MainActivity extends AppCompatActivity
             return true;
         }
 
-        if (id == R.id.action_list_members) {
-            SDK.getGuildMembers(new Callback() {
-                @Override
-                public void onFailure(Call call, IOException e) {
-
-                }
-
-                @Override
-                public void onResponse(Call call, Response response) throws IOException {
-                    List<Guild.Member> members = JSONHelper.asArray(Guild.Member.class, response);
-                    for (Guild.Member member : members) {
-                        Log.d("MEMBER", member.nick != null ? member.nick : "null");
-                    }
-                }
-            });
-            return true;
+        if (id == R.id.list_members) {
+            this.setRightNavigationFragment(MemberFragment.newInstance());
+            DrawerLayout drawer = findViewById(R.id.drawer_layout);
+            drawer.openDrawer(GravityCompat.END);
         }
 
         return super.onOptionsItemSelected(item);
@@ -152,16 +157,28 @@ public class MainActivity extends AppCompatActivity
 
         if (requestCode == FileManager.CODE.PLAY_FILE && resultCode == RESULT_OK) {
             String filePath = data.getStringExtra(FilePickerActivity.RESULT_FILE_PATH);
-            Fragment fragment = SoundFragment.newInstance(new File(filePath));
-            this.setMainFragment(fragment);
+            if (soundFragment != null) {
+                soundFragment.setActiveFile(new File(filePath));
+            }
         } else if (requestCode == FileManager.CODE.IMPORT_FILE && resultCode == RESULT_OK) {
             String filePath = data.getStringExtra(FilePickerActivity.RESULT_FILE_PATH);
-            Fragment fragment = FileConverterFragment.newInstance(filePath);
-            this.setMainFragment(fragment);
+            if (convertFragment != null) {
+                getSupportFragmentManager().beginTransaction().remove(convertFragment).commit();
+            }
+            convertFragment = FileConverterFragment.newInstance(filePath);
+            setMainFragment(convertFragment);
         }
     }
 
     public void onFileConversionSuccess(File file) {
+        if (convertFragment != null) {
+            getSupportFragmentManager().popBackStack();
+            removeMainFragment(convertFragment);
+            convertFragment = null;
+            if (soundFragment != null) {
+                setMainFragment(soundFragment);
+            }
+        }
         SDK.displayMessage("Conversion success", "File " + file.getAbsolutePath() +
                 " is ready to be played", null);
     }
@@ -180,26 +197,53 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void onImportFile() {
-        Intent intent = new Intent(this, FileManager.class);
-        intent.putExtra(FilePickerActivity.ARG_FILTER, Pattern.compile(".*\\.(wav|mp3|flac|ogg|oga|mogg|m4a|aiff|acc|3gp)"));
-        intent.putExtra(FilePickerActivity.ARG_CLOSEABLE, true);
-        intent.putExtra(FilePickerActivity.ARG_TITLE, getString(R.string.choose_file));
-        intent.putExtra(FilePickerActivity.ARG_START_PATH, FileManager.sdcard.getAbsolutePath());
-        startActivityForResult(intent, FileManager.CODE.IMPORT_FILE);
+        if (convertFragment != null) {
+            setMainFragment(convertFragment);
+        } else {
+            Intent intent = new Intent(this, FileManager.class);
+            intent.putExtra(FilePickerActivity.ARG_FILTER, Pattern.compile(".*\\.(wav|mp3|flac|ogg|oga|mogg|m4a|aiff|acc|3gp)"));
+            intent.putExtra(FilePickerActivity.ARG_CLOSEABLE, true);
+            intent.putExtra(FilePickerActivity.ARG_TITLE, getString(R.string.choose_file));
+            intent.putExtra(FilePickerActivity.ARG_START_PATH, FileManager.sdcard.getAbsolutePath());
+            startActivityForResult(intent, FileManager.CODE.IMPORT_FILE);
+        }
+    }
+
+    @Override
+    public void onVoiceDisconnect(boolean fromDestroy) {
+        Gateway.voice.stopPlaying();
+        Gateway.server.leaveVoiceChannel();
+        if (!fromDestroy) {
+            removeMainFragment(soundFragment);
+            soundFragment = null;
+        }
+    }
+
+    @Override
+    public void onFirstTextChannelLoaded(Channel channel) {
+        onTextChannelClicked(channel);
     }
 
     @Override
     public void onTextChannelClicked(Channel channel) {
-        Fragment fragment = MessageFragment.newInstance(channel);
-        setMainFragment(fragment);
+        if (messageFragment == null) {
+            messageFragment = MessageFragment.newInstance(channel);
+        } else {
+            messageFragment.setActiveChannel(channel);
+        }
+        setMainFragment(messageFragment);
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawers();
     }
 
     @Override
     public void onVoiceChannelClicked(Channel channel) {
-        Fragment fragment = SoundFragment.newInstance(channel);
-        setMainFragment(fragment);
+        if (soundFragment == null) {
+            soundFragment = SoundFragment.newInstance(channel);
+        } else {
+            soundFragment.setActiveChannel(channel);
+        }
+        setMainFragment(soundFragment);
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawers();
     }

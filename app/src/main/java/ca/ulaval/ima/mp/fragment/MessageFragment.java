@@ -26,6 +26,8 @@ public class MessageFragment extends Fragment {
     private Channel activeChannel = null;
     private List<Message> messages = new ArrayList<>();
 
+    private View rootView = null;
+
     public static MessageFragment newInstance(Channel textChannel) {
         final MessageFragment fragment = new MessageFragment();
         fragment.activeChannel = textChannel;
@@ -70,7 +72,7 @@ public class MessageFragment extends Fragment {
         });
     }
 
-    protected void loadMessages(final View view) {
+    protected void loadMessages() {
         if (activeChannel == null) {
             SDK.displayMessage("Channel", "Please select a text channel before loading messages", null);
             return;
@@ -81,7 +83,7 @@ public class MessageFragment extends Fragment {
                 runOnUI(new Runnable() {
                     @Override
                     public void run() {
-                        SDK.displayMessage("Message error", "Failed to retreive messages", null);
+                        SDK.displayMessage("Message error", "Failed to retrieve messages", null);
                     }
                 });
             }
@@ -95,18 +97,25 @@ public class MessageFragment extends Fragment {
         });
     }
 
+    public void setActiveChannel(Channel channel) {
+        this.loadMessages();
+        if (getActivity() != null && channel.name != null) {
+            getActivity().setTitle("#" + channel.name);
+        }
+        activeChannel = channel;
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        final View view = inflater.inflate(R.layout.fragment_message, container, false);
-        this.loadMessages(view);
-        Button button = view.findViewById(R.id.send_message);
+        rootView = inflater.inflate(R.layout.fragment_message, container, false);
+        Button button = rootView.findViewById(R.id.send_message);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sendMessage(view);
+                sendMessage(rootView);
             }
         });
-        return view;
+        return rootView;
     }
 }

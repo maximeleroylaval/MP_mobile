@@ -33,6 +33,7 @@ public class ChannelFragment extends Fragment {
     }
 
     protected void displayChannels(LayoutInflater inflater, View view) {
+        boolean firstTextChannel = true;
         LinearLayout linearLayout = view.findViewById(R.id.root);
         for (final Channel channel : channels) {
             if (channel.type == Channel.TYPES.CATEGORY) {
@@ -43,6 +44,10 @@ public class ChannelFragment extends Fragment {
                 for (final Channel innerChannel : channels) {
                     if (channel.id.equals(innerChannel.parentId)) {
                         if (innerChannel.type == Channel.TYPES.GUILD_TEXT) {
+                            if (firstTextChannel) {
+                                mListener.onFirstTextChannelLoaded(innerChannel);
+                                firstTextChannel = false;
+                            }
                             View channelView = inflater.inflate(R.layout.content_channel_text, null);
                             TextView textView = channelView.findViewById(R.id.title);
                             textView.setText(innerChannel.name);
@@ -130,6 +135,7 @@ public class ChannelFragment extends Fragment {
     }
 
     public interface OnChannelFragmentInteractionListener {
+        void onFirstTextChannelLoaded(Channel channel);
         void onTextChannelClicked(Channel channel);
         void onVoiceChannelClicked(Channel channel);
     }

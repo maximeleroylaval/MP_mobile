@@ -2,6 +2,8 @@ package ca.ulaval.ima.mp.sdk;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AlertDialog;
 
 import org.json.JSONException;
@@ -36,14 +38,18 @@ public class SDK {
 
     public static String state = "0986545678";
     private static String scope = "bot";
-    private static String guild_id = "391260010728128512";
+    private static String guild_id = "";
 
     public static Context mainContext = null;
     public static OkHttpClient client = null;
     public static Gateway gateway = null;
 
     public static void setGuildId(String guild_id) {
-        SDK.guild_id = guild_id;
+        if (guild_id != null && !guild_id.equals("")) {
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(SDK.mainContext);
+            prefs.edit().putString("guild_id", guild_id).apply();
+            SDK.guild_id = guild_id;
+        }
     }
 
     private static void setToken(String token, String refreshToken) {
@@ -59,8 +65,17 @@ public class SDK {
         return SDK.scheme + "://" + SDK.host + "/" + version + "/" + target;
     }
 
+    private static void loadUserPreferences() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(SDK.mainContext);
+        String guildId = prefs.getString("guild_id", null);
+        if (guildId != null) {
+            SDK.guild_id = guildId;
+        }
+    }
+
     public static void Initialize(Context mainContext) {
         SDK.mainContext = mainContext;
+        loadUserPreferences();
         HttpLoggingInterceptor logInterceptor = new HttpLoggingInterceptor()
                 .setLevel(HttpLoggingInterceptor.Level.BODY);
 

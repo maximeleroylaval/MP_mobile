@@ -17,7 +17,9 @@ import ca.ulaval.ima.mp.activity.FileManager;
 public class FileConverterFragment extends Fragment {
     private OnFileConverterFragmentInteractionListener mListener;
 
+    private View rootView = null;
     private File inputFile = null;
+    private FileManager.ConvertCallback convertCallback = null;
 
     public static FileConverterFragment newInstance(String filePath) {
         final FileConverterFragment fragment = new FileConverterFragment();
@@ -27,43 +29,48 @@ public class FileConverterFragment extends Fragment {
         return fragment;
     }
 
-    protected void handleConversion(final View view) {
+    protected void handleConversion() {
         if (inputFile == null) {
             mListener.onFileConversionFailure("Supplied file is invalid");
             return;
         }
-        TextView textView = view.findViewById(R.id.file_input);
+
+        TextView textView = rootView.findViewById(R.id.file_input);
         textView.setText(inputFile.getAbsolutePath());
-        FileManager.convertToOpus(getContext(), inputFile, new FileManager.ConvertCallback() {
-            @Override
-            public void onSuccess(File file) {
-                ProgressBar progress = view.findViewById(R.id.progress);
-                progress.setProgress(100);
-                mListener.onFileConversionSuccess(file);
-            }
+        if (convertCallback == null) {
+            convertCallback = new FileManager.ConvertCallback() {
+                @Override
+                public void onSuccess(File file) {
+                    ProgressBar progress = rootView.findViewById(R.id.progress);
+                    progress.setProgress(100);
+                    mListener.onFileConversionSuccess(file);
+                }
 
-            @Override
-            public void onProgress(String message, float percent) {
-                TextView textView = view.findViewById(R.id.details);
-                textView.append(message + "\n");
-                ProgressBar progressBar = view.findViewById(R.id.progress);
-                progressBar.setProgress((int)percent);
-            }
+                @Override
+                public void onProgress(String message, float percent) {
+                    TextView textView = rootView.findViewById(R.id.details);
+                    textView.append(message + "\n");
+                    ProgressBar progressBar = rootView.findViewById(R.id.progress);
+                    progressBar.setProgress((int)percent);
+                }
 
-            @Override
-            public void onFailure(String message) {
-                TextView textView = view.findViewById(R.id.details);
-                textView.setText(message);
-                mListener.onFileConversionFailure(message);
-            }
-        });
+                @Override
+                public void onFailure(String message) {
+                    TextView textView = rootView.findViewById(R.id.details);
+                    textView.setText(message);
+                    mListener.onFileConversionFailure(message);
+                }
+            };
+            FileManager.convertToOpus(getContext(), inputFile, convertCallback);
+        }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         final View view = inflater.inflate(R.layout.fragment_file_convert, container, false);
-        this.handleConversion(view);
+        rootView = view;
+        this.handleConversion();
         return view;
     }
 

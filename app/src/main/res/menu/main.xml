@@ -2,13 +2,13 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/action_add_bot"
-        android:orderInCategory="100"
-        android:title="@string/action_add_bot"
-        app:showAsAction="never" />
-    <item
-        android:id="@+id/action_list_members"
-        android:orderInCategory="100"
+        android:id="@+id/list_members"
         android:title="@string/action_list_members"
-        app:showAsAction="never" />
+        android:icon="@drawable/ic_member"
+        app:showAsAction="ifRoom"/>
+    <item
+        android:id="@+id/action_add_bot"
+        android:icon="@drawable/ic_shield_key_outline"
+        android:title="@string/action_add_bot"
+        app:showAsAction="ifRoom" />
 </menu>

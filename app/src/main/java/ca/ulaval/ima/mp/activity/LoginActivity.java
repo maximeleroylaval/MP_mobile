@@ -10,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 
 import java.io.IOException;
 
+import ca.ulaval.ima.mp.R;
 import ca.ulaval.ima.mp.sdk.SDK;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -77,6 +78,7 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_login);
 
         Uri data = getIntent().getData();
         if (data != null) {

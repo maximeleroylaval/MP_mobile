@@ -14,7 +14,7 @@
         android:layout_height="match_parent" />
 
     <android.support.design.widget.NavigationView
-        android:id="@+id/nav_view"
+        android:id="@+id/nav_left_view"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="start"
@@ -22,7 +22,23 @@
         android:background="@color/colorPrimary"
         app:itemTextColor="@color/colorAccent" >
         <FrameLayout
-            android:id="@+id/navContainer"
+            android:id="@+id/navLeftContainer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        </FrameLayout>
+    </android.support.design.widget.NavigationView>
+
+    <android.support.design.widget.NavigationView
+        android:id="@+id/nav_right_view"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="end"
+        android:fitsSystemWindows="true"
+        android:background="@color/colorPrimary"
+        app:itemTextColor="@color/colorAccent" >
+        <FrameLayout
+            android:id="@+id/navRightContainer"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 

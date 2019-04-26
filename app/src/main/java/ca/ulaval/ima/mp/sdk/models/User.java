@@ -1,5 +1,7 @@
 package ca.ulaval.ima.mp.sdk.models;
 
+import android.net.Uri;
+
 import org.json.JSONObject;
 
 import ca.ulaval.ima.mp.sdk.JSONHelper;
@@ -29,5 +31,11 @@ public class User {
         this.email = JSONHelper.getString(object, "email");
         this.flags = JSONHelper.getInteger(object, "flags");
         this.premiumType = JSONHelper.getInteger(object, "premium_type");
+    }
+
+    public Uri getAvatarURI() {
+        if (this.id != null && !this.id.equals("") && this.avatar != null && !this.avatar.equals(""))
+            return Uri.parse("https://cdn.discordapp.com/avatars/" + this.id + "/" + this.avatar + ".jpg");
+        return null;
     }
 }
