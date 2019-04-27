@@ -5,15 +5,22 @@
     android:gravity="bottom"
     android:orientation="vertical">
 
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
     <EditText
         android:id="@+id/edit_message"
         android:layout_width="match_parent"
         android:layout_height="40dp"
+        android:background="@color/colorAccent"
+        android:inputType="text"
         android:paddingStart="10dp"
         android:paddingLeft="10dp"
-        android:paddingRight="10dp"
         android:paddingEnd="10dp"
-        android:background="@color/colorAccent" />
+        android:paddingRight="10dp"
+        android:importantForAutofill="no" />
 
     <Button
         android:id="@+id/send_message"
