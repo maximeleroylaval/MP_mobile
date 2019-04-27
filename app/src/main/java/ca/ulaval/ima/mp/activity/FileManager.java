@@ -31,7 +31,7 @@ public class FileManager extends FilePickerActivity {
     }
 
     public static File sdcard = Environment.getExternalStorageDirectory();
-    public static File importedDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+    public static File importedDir = Environment.getExternalStoragePublicDirectory(sdcard.getAbsolutePath() + "/discord_remote");
 
     public static int getDuration(String timestampStr) {
         String[] tokens = timestampStr.split(":");
@@ -45,7 +45,18 @@ public class FileManager extends FilePickerActivity {
         return 3600 * hours + 60 * minutes + seconds;
     }
 
-    public static void convertToOpus(Context context, final File inputFile, final ConvertCallback callback) {
+    private static void checkDirectory() throws Exception {
+        if (!importedDir.exists()) {
+            if (!importedDir.mkdirs()) {
+                throw new Exception("Cannot create directory :" + importedDir.getAbsolutePath());
+            }
+        } else if (!importedDir.isDirectory()) {
+            throw new Exception("File " + importedDir.getAbsolutePath() + " is not a directory");
+        }
+    }
+
+    public static void convertToOpus(Context context, final File inputFile, final ConvertCallback callback) throws Exception {
+        FileManager.checkDirectory();
         final FFmpeg ffmpeg = FFmpeg.getInstance(context);
         if (FFmpeg.getInstance(context).isSupported()) {
             String msg = "Setting up file conversion system";
@@ -125,7 +136,8 @@ public class FileManager extends FilePickerActivity {
         }
     }
 
-    public static void getSongInfo(Context context, final File inputFile, final InformationCallback callback) {
+    public static void getSongInfo(Context context, final File inputFile, final InformationCallback callback) throws Exception {
+        FileManager.checkDirectory();
         final FFmpeg ffmpeg = FFmpeg.getInstance(context);
         if (FFmpeg.getInstance(context).isSupported()) {
             String msg = "Setting up file information system";

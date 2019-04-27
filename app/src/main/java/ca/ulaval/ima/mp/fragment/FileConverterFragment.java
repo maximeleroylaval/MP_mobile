@@ -3,6 +3,7 @@ package ca.ulaval.ima.mp.fragment;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -61,7 +62,13 @@ public class FileConverterFragment extends Fragment {
                     mListener.onFileConversionFailure(message);
                 }
             };
-            FileManager.convertToOpus(getContext(), inputFile, convertCallback);
+            try {
+                FileManager.convertToOpus(getContext(), inputFile, convertCallback);
+            } catch (Exception e) {
+                mListener.onFileConversionFailure(e.getMessage());
+                Log.e("Convert to opus fail", e.getMessage());
+                e.getStackTrace();
+            }
         }
     }
 

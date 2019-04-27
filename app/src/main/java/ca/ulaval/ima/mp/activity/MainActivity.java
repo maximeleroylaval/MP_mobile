@@ -25,6 +25,7 @@ import ca.ulaval.ima.mp.fragment.ChannelFragment;
 import ca.ulaval.ima.mp.fragment.FileConverterFragment;
 import ca.ulaval.ima.mp.fragment.MemberFragment;
 import ca.ulaval.ima.mp.fragment.MessageFragment;
+import ca.ulaval.ima.mp.fragment.SearchFragment;
 import ca.ulaval.ima.mp.fragment.SoundFragment;
 import ca.ulaval.ima.mp.gateway.Gateway;
 import ca.ulaval.ima.mp.gateway.voice.Opus;
@@ -35,13 +36,15 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
         ChannelFragment.OnChannelFragmentInteractionListener,
         FileConverterFragment.OnFileConverterFragmentInteractionListener,
-        SoundFragment.OnSoundFragmentInteractionListener {
+        SoundFragment.OnSoundFragmentInteractionListener,
+        SearchFragment.Listener {
 
     public static boolean debug = false;
 
     public SoundFragment soundFragment = null;
     public MessageFragment messageFragment = null;
     public FileConverterFragment convertFragment = null;
+    public SearchFragment searchFragment = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,7 +114,7 @@ public class MainActivity extends AppCompatActivity
         fragmentTransaction.replace(id, fragment, fragment.getClass().getName());
         fragmentTransaction.addToBackStack(fragment.toString());
         fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-        fragmentTransaction.commit();
+        fragmentTransaction.commitAllowingStateLoss();
     }
 
     public void setLeftNavigationFragment(Fragment fragment) { setFragment(fragment, R.id.navLeftContainer); }
@@ -210,6 +213,14 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    public void onSearch() {
+        if (searchFragment == null) {
+            searchFragment = SearchFragment.newInstance(this);
+        }
+        this.setFragment(searchFragment, R.id.frameContainer);
+    }
+
+    @Override
     public void onVoiceDisconnect(boolean fromDestroy) {
         Gateway.voice.stopPlaying();
         Gateway.server.leaveVoiceChannel();
@@ -246,5 +257,16 @@ public class MainActivity extends AppCompatActivity
         setMainFragment(soundFragment);
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawers();
+    }
+
+    @Override
+    public void onSearch(String search) {
+        Intent intent = new Intent(this, FileManager.class);
+        intent.putExtra(FilePickerActivity.ARG_FILTER, Pattern.compile(search + ".*\\.(opus)"));
+        intent.putExtra(FilePickerActivity.ARG_CLOSEABLE, true);
+        intent.putExtra(FilePickerActivity.ARG_TITLE, getString(R.string.choose_file));
+        intent.putExtra(FilePickerActivity.ARG_START_PATH, FileManager.importedDir.getAbsolutePath());
+        startActivityForResult(intent, FileManager.CODE.PLAY_FILE);
+
     }
 }

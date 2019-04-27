@@ -24,4 +24,9 @@
     <string name="action_voice_disconnect">Quitter le salon vocal</string>
     <string name="none">Aucun</string>
     <string name="file_song_details">Details du fichier</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="search_placeholder">Rechercher un son</string>
+    <string name="search_button">Rechercher</string>
 </resources>

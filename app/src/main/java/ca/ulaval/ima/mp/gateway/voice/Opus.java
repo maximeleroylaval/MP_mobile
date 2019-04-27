@@ -180,7 +180,6 @@ public class Opus {
                 log("Inner segment opus tag : " + new String(innerSegment));
             } else if(mBitStream == currentBitstream) {
                 for (int i = 0; i < innerSegment.length; i++) {
-                    // send data
                     frame.add(innerSegment[i]);
                 }
                 log("Packet number :" + nbPacket);

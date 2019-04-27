@@ -3,6 +3,7 @@ package ca.ulaval.ima.mp.fragment;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -58,6 +59,8 @@ public class SoundFragment extends Fragment {
         Gateway.voice.stopPlaying();
     }
 
+    public void onSearch() {mListener.onSearch();}
+
     public void setupView() {
         ImageButton playButton = rootView.findViewById(R.id.action_play_file);
         playButton.setOnClickListener(new View.OnClickListener() {
@@ -80,6 +83,13 @@ public class SoundFragment extends Fragment {
                 onImportFile();
             }
         });
+        ImageButton searchButton = rootView.findViewById(R.id.action_search_file);
+        searchButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onSearch();
+            }
+        });
         Button disconnectButton = rootView.findViewById(R.id.action_voice_disconnect);
         disconnectButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -91,22 +101,28 @@ public class SoundFragment extends Fragment {
 
     public void setFileInfo(File file) {
         final TextView infoView = rootView.findViewById(R.id.details);
-        FileManager.getSongInfo(getContext(), file, new FileManager.InformationCallback() {
-            @Override
-            public void onSuccess(String message) {
-                setInfo(infoView, message);
-            }
+        try {
+            FileManager.getSongInfo(getContext(), file, new FileManager.InformationCallback() {
+                @Override
+                public void onSuccess(String message) {
+                    setInfo(infoView, message);
+                }
 
-            @Override
-            public void onProgress(String message) {
-                setInfo(infoView, message);
-            }
+                @Override
+                public void onProgress(String message) {
+                    setInfo(infoView, message);
+                }
 
-            @Override
-            public void onFailure(String message) {
-                setInfo(infoView, message);
-            }
-        });
+                @Override
+                public void onFailure(String message) {
+                    setInfo(infoView, message);
+                }
+            });
+        } catch (Exception e) {
+            setInfo(infoView, e.getMessage());
+            Log.e("getSongInfo fail", e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     public void setActiveChannel(Channel channel) {
@@ -171,6 +187,7 @@ public class SoundFragment extends Fragment {
     public interface OnSoundFragmentInteractionListener {
         void onPlayFile();
         void onImportFile();
+        void onSearch();
         void onVoiceDisconnect(boolean fromDestroy);
     }
 }
