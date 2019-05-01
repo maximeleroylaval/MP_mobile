@@ -39,6 +39,7 @@ public class Gateway {
             public static String READY = "READY";
             public static String VOICE_STATE_UPDATE = "VOICE_STATE_UPDATE";
             public static String VOICE_SERVER_UPDATE = "VOICE_SERVER_UPDATE";
+            public static String MESSAGE_CREATE = "MESSAGE_CREATE";
         }
     }
 

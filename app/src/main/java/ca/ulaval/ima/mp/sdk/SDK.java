@@ -34,11 +34,15 @@ public class SDK {
 
     private static String token;
     private static String refreshToken;
-    public static String botToken = "NDA4Mzc4NDY2MjIwNjM4MjE4.XLS-pw.dbU0HB20CFITP-MSE9VRarbNDtg";
 
-    public static String state = "0986545678";
     private static String scope = "bot";
     private static String guild_id = "";
+    public static String botToken = "NDA4Mzc4NDY2MjIwNjM4MjE4.XLS-pw.dbU0HB20CFITP-MSE9VRarbNDtg";
+
+    public static String cdn = "https://cdn.discordapp.com/";
+    public static String main = "https://discordapp.com/";
+
+    public static String state = "0986545678";
 
     public static Context mainContext = null;
     public static OkHttpClient client = null;

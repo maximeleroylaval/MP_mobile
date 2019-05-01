@@ -59,7 +59,7 @@ public class SoundFragment extends Fragment {
         Gateway.voice.stopPlaying();
     }
 
-    public void onSearch() {mListener.onSearch();}
+    public void onSearch() {mListener.onSearchFile();}
 
     public void setupView() {
         ImageButton playButton = rootView.findViewById(R.id.action_play_file);
@@ -135,18 +135,27 @@ public class SoundFragment extends Fragment {
         }
     }
 
+    public void tryToPlayFile(File file) {
+        if ((!Gateway.voice.isPlaying() || (inputFile != null && !inputFile.getAbsolutePath().equals(file.getAbsolutePath()))))
+            this.playFile(file);
+    }
+
     public void setActiveFile(File file) {
+        this.setFile(file, true);
+    }
+
+    public void setFile(File file, boolean tryToPlay) {
         if (file != null) {
             this.setFileInfo(file);
-            if ((!Gateway.voice.isPlaying() || (inputFile != null && !inputFile.getAbsolutePath().equals(file.getAbsolutePath()))))
-                this.playFile(file);
+            if (tryToPlay)
+                this.tryToPlayFile(file);
         }
         inputFile = file;
     }
 
     @Override
     public void onResume() {
-        setActiveFile(inputFile);
+        setFile(inputFile, false);
         super.onResume();
     }
 
@@ -163,7 +172,7 @@ public class SoundFragment extends Fragment {
         rootView = inflater.inflate(R.layout.fragment_sound, container, false);
         this.setupView();
         this.setActiveChannel(voiceChannel);
-        this.setActiveFile(inputFile);
+        this.setFile(inputFile, false);
         return rootView;
     }
 
@@ -187,7 +196,7 @@ public class SoundFragment extends Fragment {
     public interface OnSoundFragmentInteractionListener {
         void onPlayFile();
         void onImportFile();
-        void onSearch();
+        void onSearchFile();
         void onVoiceDisconnect(boolean fromDestroy);
     }
 }

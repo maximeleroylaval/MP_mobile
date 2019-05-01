@@ -1,7 +1,12 @@
 package ca.ulaval.ima.mp.activity;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Environment;
+import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
 import com.nbsp.materialfilepicker.ui.FilePickerActivity;
@@ -9,6 +14,7 @@ import com.nbsp.materialfilepicker.ui.FilePickerActivity;
 import java.io.File;
 
 import ca.ulaval.ima.mp.gateway.voice.Opus;
+import ca.ulaval.ima.mp.sdk.SDK;
 import nl.bravobit.ffmpeg.ExecuteBinaryResponseHandler;
 import nl.bravobit.ffmpeg.FFmpeg;
 
@@ -190,6 +196,23 @@ public class FileManager extends FilePickerActivity {
             logConverter(msg);
             callback.onFailure(msg);
         }
+    }
+
+    public static boolean requirePermissions(AppCompatActivity activity) {
+        if (Build.VERSION.SDK_INT >= 23) {
+            if (activity.checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
+                    == PackageManager.PERMISSION_GRANTED &&
+                    activity.checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    == PackageManager.PERMISSION_GRANTED) {
+                return true;
+            } else {
+                ActivityCompat.requestPermissions(activity,
+                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,
+                                Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                return false;
+            }
+        }
+        return true;
     }
 
     public static String getFileExtension(String fileName) {

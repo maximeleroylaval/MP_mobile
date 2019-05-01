@@ -28,7 +28,6 @@ import ca.ulaval.ima.mp.fragment.MessageFragment;
 import ca.ulaval.ima.mp.fragment.SearchFragment;
 import ca.ulaval.ima.mp.fragment.SoundFragment;
 import ca.ulaval.ima.mp.gateway.Gateway;
-import ca.ulaval.ima.mp.gateway.voice.Opus;
 import ca.ulaval.ima.mp.sdk.SDK;
 import ca.ulaval.ima.mp.sdk.models.Channel;
 
@@ -39,7 +38,7 @@ public class MainActivity extends AppCompatActivity
         SoundFragment.OnSoundFragmentInteractionListener,
         SearchFragment.Listener {
 
-    public static boolean debug = false;
+    public static boolean debug = true;
 
     public SoundFragment soundFragment = null;
     public MessageFragment messageFragment = null;
@@ -50,7 +49,6 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         SDK.Initialize(this);
-        Opus.requestRecordPermission(this, this);
 
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -159,17 +157,21 @@ public class MainActivity extends AppCompatActivity
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == FileManager.CODE.PLAY_FILE && resultCode == RESULT_OK) {
-            String filePath = data.getStringExtra(FilePickerActivity.RESULT_FILE_PATH);
-            if (soundFragment != null) {
-                soundFragment.setActiveFile(new File(filePath));
+            if (FileManager.requirePermissions(this)) {
+                String filePath = data.getStringExtra(FilePickerActivity.RESULT_FILE_PATH);
+                if (soundFragment != null) {
+                    soundFragment.setActiveFile(new File(filePath));
+                }
             }
         } else if (requestCode == FileManager.CODE.IMPORT_FILE && resultCode == RESULT_OK) {
-            String filePath = data.getStringExtra(FilePickerActivity.RESULT_FILE_PATH);
-            if (convertFragment != null) {
-                getSupportFragmentManager().beginTransaction().remove(convertFragment).commit();
+            if (FileManager.requirePermissions(this)) {
+                String filePath = data.getStringExtra(FilePickerActivity.RESULT_FILE_PATH);
+                if (convertFragment != null) {
+                    getSupportFragmentManager().beginTransaction().remove(convertFragment).commit();
+                }
+                convertFragment = FileConverterFragment.newInstance(filePath);
+                setMainFragment(convertFragment);
             }
-            convertFragment = FileConverterFragment.newInstance(filePath);
-            setMainFragment(convertFragment);
         }
     }
 
@@ -191,33 +193,39 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void onPlayFile() {
-        Intent intent = new Intent(this, FileManager.class);
-        intent.putExtra(FilePickerActivity.ARG_FILTER, Pattern.compile(".*\\.(opus)"));
-        intent.putExtra(FilePickerActivity.ARG_CLOSEABLE, true);
-        intent.putExtra(FilePickerActivity.ARG_TITLE, getString(R.string.choose_file));
-        intent.putExtra(FilePickerActivity.ARG_START_PATH, FileManager.importedDir.getAbsolutePath());
-        startActivityForResult(intent, FileManager.CODE.PLAY_FILE);
+        if (FileManager.requirePermissions(this)) {
+            Intent intent = new Intent(this, FileManager.class);
+            intent.putExtra(FilePickerActivity.ARG_FILTER, Pattern.compile(".*\\.(opus)"));
+            intent.putExtra(FilePickerActivity.ARG_CLOSEABLE, true);
+            intent.putExtra(FilePickerActivity.ARG_TITLE, getString(R.string.choose_file));
+            intent.putExtra(FilePickerActivity.ARG_START_PATH, FileManager.importedDir.getAbsolutePath());
+            startActivityForResult(intent, FileManager.CODE.PLAY_FILE);
+        }
     }
 
     public void onImportFile() {
-        if (convertFragment != null) {
-            setMainFragment(convertFragment);
-        } else {
-            Intent intent = new Intent(this, FileManager.class);
-            intent.putExtra(FilePickerActivity.ARG_FILTER, Pattern.compile(".*\\.(wav|mp3|flac|ogg|oga|mogg|m4a|aiff|acc|3gp)"));
-            intent.putExtra(FilePickerActivity.ARG_CLOSEABLE, true);
-            intent.putExtra(FilePickerActivity.ARG_TITLE, getString(R.string.choose_file));
-            intent.putExtra(FilePickerActivity.ARG_START_PATH, FileManager.sdcard.getAbsolutePath());
-            startActivityForResult(intent, FileManager.CODE.IMPORT_FILE);
+        if (FileManager.requirePermissions(this)) {
+            if (convertFragment != null) {
+                setMainFragment(convertFragment);
+            } else {
+                Intent intent = new Intent(this, FileManager.class);
+                intent.putExtra(FilePickerActivity.ARG_FILTER, Pattern.compile(".*\\.(wav|mp3|flac|ogg|oga|mogg|m4a|aiff|acc|3gp)"));
+                intent.putExtra(FilePickerActivity.ARG_CLOSEABLE, true);
+                intent.putExtra(FilePickerActivity.ARG_TITLE, getString(R.string.choose_file));
+                intent.putExtra(FilePickerActivity.ARG_START_PATH, FileManager.sdcard.getAbsolutePath());
+                startActivityForResult(intent, FileManager.CODE.IMPORT_FILE);
+            }
         }
     }
 
     @Override
-    public void onSearch() {
-        if (searchFragment == null) {
-            searchFragment = SearchFragment.newInstance(this);
+    public void onSearchFile() {
+        if (FileManager.requirePermissions(this)) {
+            if (searchFragment == null) {
+                searchFragment = SearchFragment.newInstance(this);
+            }
+            this.setFragment(searchFragment, R.id.frameContainer);
         }
-        this.setFragment(searchFragment, R.id.frameContainer);
     }
 
     @Override
@@ -261,12 +269,13 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onSearch(String search) {
-        Intent intent = new Intent(this, FileManager.class);
-        intent.putExtra(FilePickerActivity.ARG_FILTER, Pattern.compile(search + ".*\\.(opus)"));
-        intent.putExtra(FilePickerActivity.ARG_CLOSEABLE, true);
-        intent.putExtra(FilePickerActivity.ARG_TITLE, getString(R.string.choose_file));
-        intent.putExtra(FilePickerActivity.ARG_START_PATH, FileManager.importedDir.getAbsolutePath());
-        startActivityForResult(intent, FileManager.CODE.PLAY_FILE);
-
+        if (FileManager.requirePermissions(this)) {
+            Intent intent = new Intent(this, FileManager.class);
+            intent.putExtra(FilePickerActivity.ARG_FILTER, Pattern.compile(search + ".*\\.(opus)"));
+            intent.putExtra(FilePickerActivity.ARG_CLOSEABLE, true);
+            intent.putExtra(FilePickerActivity.ARG_TITLE, getString(R.string.choose_file));
+            intent.putExtra(FilePickerActivity.ARG_START_PATH, FileManager.importedDir.getAbsolutePath());
+            startActivityForResult(intent, FileManager.CODE.PLAY_FILE);
+        }
     }
 }

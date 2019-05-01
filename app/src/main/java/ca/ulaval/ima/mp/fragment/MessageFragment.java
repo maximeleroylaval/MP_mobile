@@ -2,6 +2,7 @@ package ca.ulaval.ima.mp.fragment;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,24 +10,32 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import ca.ulaval.ima.mp.sdk.JSONHelper;
 import ca.ulaval.ima.mp.R;
+import ca.ulaval.ima.mp.adapter.MessageAdapter;
+import ca.ulaval.ima.mp.gateway.Gateway;
+import ca.ulaval.ima.mp.gateway.server.IMessageHandler;
+import ca.ulaval.ima.mp.sdk.SDK;
 import ca.ulaval.ima.mp.sdk.models.Channel;
 import ca.ulaval.ima.mp.sdk.models.Message;
-import ca.ulaval.ima.mp.sdk.SDK;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 
-public class MessageFragment extends Fragment {
+public class MessageFragment extends Fragment implements IMessageHandler {
     private Channel activeChannel = null;
     private List<Message> messages = new ArrayList<>();
 
     private View rootView = null;
+
+    private MessageAdapter mAdapter;
 
     public static MessageFragment newInstance(Channel textChannel) {
         final MessageFragment fragment = new MessageFragment();
@@ -72,12 +81,17 @@ public class MessageFragment extends Fragment {
         });
     }
 
-    protected void loadMessages() {
-        if (activeChannel == null) {
-            SDK.displayMessage("Channel", "Please select a text channel before loading messages", null);
+    protected void loadMessages(Channel channel) {
+        if (channel == null) {
+            runOnUI(new Runnable() {
+                @Override
+                public void run() {
+                    SDK.displayMessage("Channel", "Please select a text channel before loading messages", null);
+                }
+            });
             return;
         }
-        SDK.getMessages(activeChannel, new Callback() {
+        SDK.getMessages(channel, new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
                 runOnUI(new Runnable() {
@@ -89,16 +103,28 @@ public class MessageFragment extends Fragment {
             }
             @Override
             public void onResponse(Call call, Response response) throws IOException {
-                messages = JSONHelper.asArray(Message.class, response);
-                for (Message message : messages) {
-                    // Display messages
+                messages.clear();
+                try {
+                    JSONArray rawMessages = new JSONArray(response.body().string());
+                    for (int i = rawMessages.length() - 1; i > 0; i--) {
+                        JSONObject obj = rawMessages.getJSONObject(i);
+                        messages.add(new Message(obj));
+                    }
+                    runOnUI(new Runnable() {
+                        @Override
+                        public void run() {
+                            mAdapter.notifyDataSetChanged();
+                        }
+                    });
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
             }
         });
     }
 
     public void setActiveChannel(Channel channel) {
-        this.loadMessages();
+        this.loadMessages(channel);
         if (getActivity() != null && channel.name != null) {
             getActivity().setTitle("#" + channel.name);
         }
@@ -116,6 +142,31 @@ public class MessageFragment extends Fragment {
                 sendMessage(rootView);
             }
         });
+
+        RecyclerView recyclerView = rootView.findViewById(R.id.message_list);
+        if (recyclerView != null) {
+            mAdapter = new MessageAdapter(this.messages);
+            recyclerView.setAdapter(mAdapter);
+        }
+        this.setActiveChannel(this.activeChannel);
+        Gateway.server.setMessageHandler(this);
         return rootView;
+    }
+
+    @Override
+    public void onMessageReceived(Message message) {
+        messages.add(message);
+        runOnUI(new Runnable() {
+            @Override
+            public void run() {
+                mAdapter.notifyItemInserted(messages.size() - 1);
+                RecyclerView recyclerView = rootView.findViewById(R.id.message_list);
+                if (rootView != null) {
+                    RecyclerView.LayoutManager manager = recyclerView.getLayoutManager();
+                    if (manager != null)
+                        manager.scrollToPosition(messages.size() - 1);
+                }
+            }
+        });
     }
 }

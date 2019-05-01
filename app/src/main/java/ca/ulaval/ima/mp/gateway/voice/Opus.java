@@ -5,8 +5,10 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.media.AudioFormat;
+import android.os.Build;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
 import java.io.File;
@@ -245,14 +247,17 @@ public class Opus {
         return new byte[0];
     }
 
-    public static void requestRecordPermission(Activity activity, Context context) {
-        int MY_PERMISSIONS_REQUEST_RECORD_AUDIO = 1;
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(activity,
-                    new String[] { Manifest.permission.RECORD_AUDIO },
-                    MY_PERMISSIONS_REQUEST_RECORD_AUDIO);
+    public static boolean requestRecordPermission(AppCompatActivity activity) {
+        if (Build.VERSION.SDK_INT >= 23) {
+            if (activity.checkSelfPermission(Manifest.permission.RECORD_AUDIO)
+                    == PackageManager.PERMISSION_GRANTED) {
+                return true;
+            } else {
+                ActivityCompat.requestPermissions(activity, new String[] { Manifest.permission.RECORD_AUDIO }, 1);
+                return false;
+            }
         }
+        return true;
     }
 
     byte[] getPacket() {

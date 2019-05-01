@@ -10,6 +10,7 @@ import ca.ulaval.ima.mp.gateway.server.model.Heartbeat;
 import ca.ulaval.ima.mp.gateway.server.model.Identify;
 import ca.ulaval.ima.mp.gateway.server.model.Ready;
 import ca.ulaval.ima.mp.sdk.models.Channel;
+import ca.ulaval.ima.mp.sdk.models.Message;
 import ca.ulaval.ima.mp.sdk.models.Voice;
 import ca.ulaval.ima.mp.gateway.Gateway;
 import ca.ulaval.ima.mp.gateway.server.model.Payload;
@@ -24,6 +25,7 @@ public class ServerListener extends WebSocketListener {
     private Voice.State voiceState = null;
     private Voice.Server voiceServer = null;
     private WebSocket socket;
+    private IMessageHandler messageHandler;
 
     public void joinVoiceChannel(Channel channel) {
         Voice.State voiceState = new Voice.State(channel);
@@ -35,6 +37,10 @@ public class ServerListener extends WebSocketListener {
         Voice.State voiceState = new Voice.State(voiceServer.guildId);
         Payload payload = new Payload(Gateway.SERVER.OP.VOICE_STATE_UPDATE, voiceState, null, null);
         input(payload.toJSONString());
+    }
+
+    public void setMessageHandler(IMessageHandler myMessageHandler) {
+        messageHandler = myMessageHandler;
     }
 
     public void sendHeartbeat(Payload heartbeat) {
@@ -60,6 +66,10 @@ public class ServerListener extends WebSocketListener {
             } else if (payload.t.equals(Gateway.SERVER.EVENT.VOICE_SERVER_UPDATE)) {
                 voiceServer = new Voice.Server((JSONObject) payload.d);
                 Gateway.establishVoiceConnection(voiceState, voiceServer);
+            } else if (payload.t.equals(Gateway.SERVER.EVENT.MESSAGE_CREATE)) {
+                if (messageHandler != null) {
+                    messageHandler.onMessageReceived(new Message((JSONObject) payload.d));
+                }
             }
         } else if (payload.op.equals(Gateway.SERVER.OP.HEARTBEAT_ACK)) {
             //check if ack is between last heartbeat or else reconnect
