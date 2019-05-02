@@ -134,7 +134,7 @@ public class SoundFragment extends Fragment {
 
     public void setActiveChannel(Channel channel) {
         voiceChannel = channel;
-        if (getActivity() != null && channel.name != null) {
+        if (getActivity() != null && channel != null && channel.name != null) {
             getActivity().setTitle("@" + channel.name);
         }
         if (voiceChannel != null) {

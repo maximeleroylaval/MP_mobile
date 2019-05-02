@@ -284,7 +284,7 @@ public class MainActivity extends AppCompatActivity
     public void onSearch(String search) {
         if (FileManager.requirePermissions(this)) {
             Intent intent = new Intent(this, FileManager.class);
-            intent.putExtra(FilePickerActivity.ARG_FILTER, Pattern.compile(search + ".*\\.(opus)"));
+            intent.putExtra(FilePickerActivity.ARG_FILTER, Pattern.compile(search + "*.*\\.(opus)"));
             intent.putExtra(FilePickerActivity.ARG_CLOSEABLE, true);
             intent.putExtra(FilePickerActivity.ARG_TITLE, getString(R.string.choose_file));
             intent.putExtra(FilePickerActivity.ARG_START_PATH, FileManager.importedDir.getAbsolutePath());

@@ -125,7 +125,7 @@ public class MessageFragment extends Fragment implements IMessageHandler {
 
     public void setActiveChannel(Channel channel) {
         this.loadMessages(channel);
-        if (getActivity() != null && channel.name != null) {
+        if (getActivity() != null && channel != null && channel.name != null) {
             getActivity().setTitle("#" + channel.name);
         }
         activeChannel = channel;
@@ -149,7 +149,8 @@ public class MessageFragment extends Fragment implements IMessageHandler {
             recyclerView.setAdapter(mAdapter);
         }
         this.setActiveChannel(this.activeChannel);
-        Gateway.server.setMessageHandler(this);
+        if (Gateway.server != null)
+            Gateway.server.setMessageHandler(this);
         return rootView;
     }
 

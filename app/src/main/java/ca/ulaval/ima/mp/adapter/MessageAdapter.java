@@ -32,10 +32,12 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
-        holder.mItem = mValues.get(position);
-        holder.mUserView.setText(mValues.get(position).author.username);
-        holder.mContentView.setText(mValues.get(position).content);
-        Picasso.get().load(mValues.get(position).author.getAvatarURI()).into(holder.mAvatarView);
+        if (position < mValues.size()) {
+            holder.mItem = mValues.get(position);
+            holder.mUserView.setText(mValues.get(position).author.username);
+            holder.mContentView.setText(mValues.get(position).content);
+            Picasso.get().load(mValues.get(position).author.getAvatarURI()).into(holder.mAvatarView);
+        }
     }
 
     @Override
