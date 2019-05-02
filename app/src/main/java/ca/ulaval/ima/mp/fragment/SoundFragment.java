@@ -97,6 +97,13 @@ public class SoundFragment extends Fragment {
                 onDisconnect(false);
             }
         });
+        ImageButton recordButton = rootView.findViewById(R.id.action_record);
+        recordButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mListener.onRecord();
+            }
+        });
     }
 
     public void setFileInfo(File file) {
@@ -197,6 +204,7 @@ public class SoundFragment extends Fragment {
         void onPlayFile();
         void onImportFile();
         void onSearchFile();
+        void onRecord();
         void onVoiceDisconnect(boolean fromDestroy);
     }
 }

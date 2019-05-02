@@ -25,6 +25,7 @@ import ca.ulaval.ima.mp.fragment.ChannelFragment;
 import ca.ulaval.ima.mp.fragment.FileConverterFragment;
 import ca.ulaval.ima.mp.fragment.MemberFragment;
 import ca.ulaval.ima.mp.fragment.MessageFragment;
+import ca.ulaval.ima.mp.fragment.RecordFragment;
 import ca.ulaval.ima.mp.fragment.SearchFragment;
 import ca.ulaval.ima.mp.fragment.SoundFragment;
 import ca.ulaval.ima.mp.gateway.Gateway;
@@ -36,7 +37,8 @@ public class MainActivity extends AppCompatActivity
         ChannelFragment.OnChannelFragmentInteractionListener,
         FileConverterFragment.OnFileConverterFragmentInteractionListener,
         SoundFragment.OnSoundFragmentInteractionListener,
-        SearchFragment.Listener {
+        SearchFragment.Listener,
+        RecordFragment.Listener {
 
     public static boolean debug = true;
 
@@ -44,6 +46,7 @@ public class MainActivity extends AppCompatActivity
     public MessageFragment messageFragment = null;
     public FileConverterFragment convertFragment = null;
     public SearchFragment searchFragment = null;
+    public RecordFragment recordFragment = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -229,6 +232,16 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    public void onRecord() {
+        if (RecordFragment.requirePermissions(this)) {
+            if (recordFragment == null) {
+                recordFragment = RecordFragment.newInstance(this);
+            }
+            this.setFragment(recordFragment, R.id.frameContainer);
+        }
+    }
+
+    @Override
     public void onVoiceDisconnect(boolean fromDestroy) {
         Gateway.voice.stopPlaying();
         Gateway.server.leaveVoiceChannel();
@@ -276,6 +289,17 @@ public class MainActivity extends AppCompatActivity
             intent.putExtra(FilePickerActivity.ARG_TITLE, getString(R.string.choose_file));
             intent.putExtra(FilePickerActivity.ARG_START_PATH, FileManager.importedDir.getAbsolutePath());
             startActivityForResult(intent, FileManager.CODE.PLAY_FILE);
+        }
+    }
+
+    @Override
+    public void onRecordEnd(File output) {
+        if (output != null) {
+            if (convertFragment != null) {
+                getSupportFragmentManager().beginTransaction().remove(convertFragment).commit();
+            }
+            convertFragment = FileConverterFragment.newInstance(output.getAbsolutePath());
+            setMainFragment(convertFragment);
         }
     }
 }
